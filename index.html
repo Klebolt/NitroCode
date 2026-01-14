@@ -104,36 +104,45 @@
         .hero-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; min-height: 80vh; padding: 40px 0; }
         .hero-text h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; margin-bottom: 20px; color: var(--primary); min-height: 3.8rem; border-right: 3px solid var(--primary); display: inline-block; animation: blink 0.7s step-end infinite; white-space: pre-wrap; max-width: 100%; word-wrap: break-word; }
         .hero-text p { font-size: 1.1rem; color: var(--secondary); max-width: 450px; margin-bottom: 30px; }
+        
+        .social-proof { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; font-size: 0.9rem; color: var(--secondary); }
+        .stars { color: #FFD700; letter-spacing: 2px; }
 
         /* Form com Floating Labels */
         .form-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); backdrop-filter: blur(10px); animation: slideInRight 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.5s; opacity: 0; width: 100%; }
         
+        /* Chips */
+        .chip-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .chip-btn { background: var(--bg-deep); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; color: var(--secondary); font-family: var(--font-tech); }
+        .chip-btn:hover { border-color: var(--highlight); color: var(--highlight); }
+        .chip-btn:active { transform: scale(0.95); }
+
         .floating-group { position: relative; margin-bottom: 20px; }
         
         .input-box { width: 100%; background: var(--bg-deep); border: 1px solid #ccc; padding: 20px 15px 8px; color: var(--primary); border-radius: 8px; font-size: 1rem; transition: 0.3s; min-height: 54px; }
         .input-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); background: var(--bg-deep); }
         .input-box.error { border-color: var(--highlight-email); animation: shake 0.3s; background: rgba(211, 47, 47, 0.05); }
         
-        /* Floating Label Logic */
         .floating-label { 
             position: absolute; top: 50%; left: 15px; transform: translateY(-50%); 
             font-size: 1rem; color: var(--secondary); pointer-events: none; transition: 0.3s; 
             font-family: var(--font-ui); background: transparent; 
         }
         
-        /* Quando input tem foco ou valor (placeholder-shown é false) */
         .input-box:focus ~ .floating-label,
         .input-box:not(:placeholder-shown) ~ .floating-label {
             top: 10px; transform: translateY(0); font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; font-family: var(--font-tech);
         }
         
-        /* textarea specific adjustment */
         textarea.input-box { padding-top: 25px; }
         textarea.input-box ~ .floating-label { top: 20px; }
         textarea.input-box:focus ~ .floating-label,
         textarea.input-box:not(:placeholder-shown) ~ .floating-label { top: 10px; }
 
-        /* Honeypot Invisível */
+        .error-msg { display: none; color: var(--highlight-email); font-size: 0.75rem; margin-top: -15px; margin-bottom: 15px; margin-left: 5px; }
+        .input-box.error ~ .error-msg { display: block; }
+
+        /* Honeypot */
         .honey-trap { opacity: 0; position: absolute; top: 0; left: 0; height: 0; width: 0; z-index: -1; pointer-events: none; }
 
         .helper-text { font-size: 0.75rem; color: var(--secondary); margin-top: -15px; margin-bottom: 15px; margin-left: 5px; display: block; }
@@ -300,34 +309,48 @@
                 <div class="hero-text">
                     <h1 id="typing-title"></h1>
                     <p>Especialistas em automação e desenvolvimento web de alta performance. Descreva seu problema e receba um orçamento técnico.</p>
+                    
+                    <div class="social-proof">
+                        <span class="stars">★★★★★</span>
+                        <span>Junte-se a empresas inovadoras que já escalaram.</span>
+                    </div>
                 </div>
                 <div class="form-card">
                     <form id="clientForm" onsubmit="submitForm(event)">
                         <input type="text" id="website_trap" class="honey-trap" tabindex="-1" autocomplete="off">
 
                         <div class="floating-group">
-                            <input type="text" id="inpName" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <input type="text" id="inpName" class="input-box" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)" autocomplete="name">
                             <label class="floating-label">Nome Completo</label>
                         </div>
                         
                         <div class="floating-group">
-                            <input type="tel" id="inpPhone" class="input-box" placeholder=" " oninput="maskPhone(this); valForm(); saveDraft()" maxlength="15">
+                            <input type="tel" id="inpPhone" class="input-box" placeholder=" " oninput="maskPhone(this); clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)" maxlength="15" autocomplete="tel">
                             <label class="floating-label">WhatsApp (Opcional)</label>
+                            <span class="error-msg" id="msgPhone">Número inválido ou curto demais.</span>
                         </div>
                         <span class="helper-text">Não enviaremos spam. Promessa de dev.</span>
 
                         <div class="floating-group">
-                            <input type="email" id="inpEmail" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <input type="email" id="inpEmail" class="input-box" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)" autocomplete="email">
                             <label class="floating-label">E-mail Profissional</label>
+                            <span class="error-msg" id="msgEmail">Digite um e-mail válido (ex: nome@empresa.com)</span>
+                        </div>
+
+                        <div class="chip-group">
+                            <button type="button" class="chip-btn" onclick="fillChip('Site Institucional')">🚀 Site Institucional</button>
+                            <button type="button" class="chip-btn" onclick="fillChip('Automação Python')">🤖 Automação</button>
+                            <button type="button" class="chip-btn" onclick="fillChip('Landing Page')">📄 Landing Page</button>
+                            <button type="button" class="chip-btn" onclick="fillChip('Sistema Web')">💻 Sistema Web</button>
                         </div>
 
                         <div class="floating-group">
-                            <input type="text" id="inpTitle" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <input type="text" id="inpTitle" class="input-box" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)">
                             <label class="floating-label">O que você precisa?</label>
                         </div>
 
                         <div class="floating-group">
-                            <textarea id="inpDesc" class="input-box" rows="3" placeholder=" " required oninput="valForm(); saveDraft()"></textarea>
+                            <textarea id="inpDesc" class="input-box" rows="3" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)"></textarea>
                             <label class="floating-label">Detalhes (Ex: Preciso de um sistema para estoque...)</label>
                         </div>
 
@@ -455,7 +478,7 @@
     <script>
         const ICONS = {
             lightning: `<svg class="sys-icon small" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-            gear: `<svg class="sys-icon small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+            gear: `<svg class="sys-icon small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
             reply: `<svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>`,
             check: `<svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
             whatsapp: `<svg class="sys-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`,
@@ -540,10 +563,26 @@
         }
 
         function maskPhone(input) {
-            let v = input.value.replace(/\D/g, "");
-            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
-            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            let v = input.value;
+            // Melhoria 4: Smart Mask
+            if (v.startsWith('+')) {
+                // Modo Internacional: Permite +, numeros, espaço e traço
+                v = v.replace(/[^\d+ -]/g, "");
+            } else {
+                // Modo Brasil: Máscara Padrão
+                v = v.replace(/\D/g, "");
+                v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+                v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            }
             input.value = v;
+        }
+
+        // Chip Logic
+        function fillChip(val) {
+            const input = document.getElementById('inpTitle');
+            input.value = val;
+            checkFormState(); // Atualiza botão
+            saveDraft();
         }
 
         // Draft Logic
@@ -566,7 +605,7 @@
                 document.getElementById('inpEmail').value = draft.email || '';
                 document.getElementById('inpTitle').value = draft.title || '';
                 document.getElementById('inpDesc').value = draft.desc || '';
-                valForm(); // re-validate to enable button if ready
+                checkFormState(); 
             }
         }
 
@@ -607,20 +646,50 @@
         }
         function logout() { sessionStorage.removeItem('nitroAuth'); document.getElementById('view-admin').classList.add('hidden'); document.getElementById('view-client').classList.remove('hidden'); }
 
-        // Client Form
-        function valForm() {
+        // Client Form Logic - MELHORIA 1 (Validação separada)
+        
+        // Função chamada no onblur para mostrar erro visual
+        function validateField(input) {
+            const val = input.value.trim();
+            if(val === '') return; // Não valida campo vazio se não for submit
+
+            let isValid = true;
+            if(input.type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                isValid = emailRegex.test(val);
+            }
+            if(input.id === 'inpPhone') {
+                isValid = val.length >= 8; // Validacao simples
+            }
+
+            if(!isValid) {
+                input.classList.add('error');
+            } else {
+                input.classList.remove('error');
+            }
+        }
+
+        // Função chamada no oninput para limpar erro visual
+        function clearError(input) {
+            input.classList.remove('error');
+        }
+
+        // Função para checar estado do botão (sem mudar cores de input)
+        function checkFormState() {
             const name = document.getElementById('inpName').value.trim();
-            const emailInp = document.getElementById('inpEmail');
-            const phoneInp = document.getElementById('inpPhone');
+            const emailInp = document.getElementById('inpEmail').value.trim();
             const title = document.getElementById('inpTitle').value.trim();
             const desc = document.getElementById('inpDesc').value.trim();
+            
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const isEmailValid = emailRegex.test(emailInp.value.trim());
-            const isPhoneValid = phoneInp.value.length === 0 || phoneInp.value.length >= 14; 
-            if (emailInp.value.length > 0 && !isEmailValid) emailInp.classList.add('error'); else emailInp.classList.remove('error');
-            if (phoneInp.value.length > 0 && !isPhoneValid) phoneInp.classList.add('error'); else phoneInp.classList.remove('error');
-            document.getElementById('btnSubmit').disabled = !(name && isEmailValid && isPhoneValid && title && desc);
+            const isEmailValid = emailRegex.test(emailInp);
+            
+            const isValid = name && isEmailValid && title && desc;
+            document.getElementById('btnSubmit').disabled = !isValid;
         }
+
+        // Mantive valForm por compatibilidade, mas redirecionando para lógica nova
+        function valForm() { checkFormState(); }
 
         function submitForm(e) {
             e.preventDefault();
