@@ -8,8 +8,11 @@
     <meta property="og:title" content="NitroCode | Control Center">
     <meta property="og:description" content="Solicite seu orçamento de desenvolvimento web e automação. Painel administrativo integrado.">
     <meta property="og:image" content="img/logo_oficial_cortado.png">
-    <meta property="og:url" content="https://nitrocode.com.br">
     <meta property="og:type" content="website">
+    
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk5pdHJvQ29kZSIsCiAgInNob3J0X25hbWUiOiAiTml0cm9Db2RlIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIiwKICAiaWNvbnMiOiBbXQp9">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +64,7 @@
                 linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
-            overflow-x: hidden; /* Evita rolagem lateral indesejada */
+            overflow-x: hidden;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -91,8 +94,7 @@
         /* HEADER */
         header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 15px 0; position: sticky; top: 0; z-index: 100; }
         body.dark-mode header { background: rgba(18, 18, 18, 0.9); }
-        
-        .logo-img { height: 40px; transition: transform 0.3s; filter: var(--logo-filter); } /* Reduzi levemente para mobile */
+        .logo-img { height: 40px; transition: transform 0.3s; filter: var(--logo-filter); }
         .logo-img:hover { transform: scale(1.05); }
         .header-actions { display: flex; gap: 10px; align-items: center; }
         .btn-lock { background: var(--bg-deep); border: 1px solid var(--border); color: var(--secondary); padding: 8px 12px; border-radius: 6px; font-family: var(--font-tech); font-size: 0.75rem; cursor: pointer; transition: 0.3s; white-space: nowrap; }
@@ -100,24 +102,41 @@
 
         /* CLIENTE */
         .hero-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; min-height: 80vh; padding: 40px 0; }
-        
-        .hero-text h1 { 
-            /* Ajuste Responsivo de Fonte: Clamp(min, ideal, max) */
-            font-size: clamp(2rem, 5vw, 3.5rem); 
-            line-height: 1.1; margin-bottom: 20px; color: var(--primary); 
-            min-height: 3.8rem; border-right: 3px solid var(--primary); display: inline-block; animation: blink 0.7s step-end infinite; white-space: pre-wrap; 
-            max-width: 100%;
-            word-wrap: break-word;
-        }
+        .hero-text h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; margin-bottom: 20px; color: var(--primary); min-height: 3.8rem; border-right: 3px solid var(--primary); display: inline-block; animation: blink 0.7s step-end infinite; white-space: pre-wrap; max-width: 100%; word-wrap: break-word; }
         .hero-text p { font-size: 1.1rem; color: var(--secondary); max-width: 450px; margin-bottom: 30px; }
 
-        /* Form */
+        /* Form com Floating Labels */
         .form-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); backdrop-filter: blur(10px); animation: slideInRight 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.5s; opacity: 0; width: 100%; }
-        .form-label { display: block; margin-bottom: 8px; color: var(--primary); font-weight: 700; font-family: var(--font-tech); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
         
-        .input-box { width: 100%; background: var(--bg-deep); border: 1px solid #ccc; padding: 15px; color: var(--primary); border-radius: 8px; font-size: 1rem; margin-bottom: 20px; transition: 0.3s; }
-        .input-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); transform: scale(1.01); background: var(--bg-deep); }
+        .floating-group { position: relative; margin-bottom: 20px; }
+        
+        .input-box { width: 100%; background: var(--bg-deep); border: 1px solid #ccc; padding: 20px 15px 8px; color: var(--primary); border-radius: 8px; font-size: 1rem; transition: 0.3s; min-height: 54px; }
+        .input-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); background: var(--bg-deep); }
         .input-box.error { border-color: var(--highlight-email); animation: shake 0.3s; background: rgba(211, 47, 47, 0.05); }
+        
+        /* Floating Label Logic */
+        .floating-label { 
+            position: absolute; top: 50%; left: 15px; transform: translateY(-50%); 
+            font-size: 1rem; color: var(--secondary); pointer-events: none; transition: 0.3s; 
+            font-family: var(--font-ui); background: transparent; 
+        }
+        
+        /* Quando input tem foco ou valor (placeholder-shown é false) */
+        .input-box:focus ~ .floating-label,
+        .input-box:not(:placeholder-shown) ~ .floating-label {
+            top: 10px; transform: translateY(0); font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; font-family: var(--font-tech);
+        }
+        
+        /* textarea specific adjustment */
+        textarea.input-box { padding-top: 25px; }
+        textarea.input-box ~ .floating-label { top: 20px; }
+        textarea.input-box:focus ~ .floating-label,
+        textarea.input-box:not(:placeholder-shown) ~ .floating-label { top: 10px; }
+
+        /* Honeypot Invisível */
+        .honey-trap { opacity: 0; position: absolute; top: 0; left: 0; height: 0; width: 0; z-index: -1; pointer-events: none; }
+
+        .helper-text { font-size: 0.75rem; color: var(--secondary); margin-top: -15px; margin-bottom: 15px; margin-left: 5px; display: block; }
 
         .btn-nitro { width: 100%; padding: 16px; background: var(--primary); color: var(--bg-deep); border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
         .btn-nitro:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
@@ -127,14 +146,13 @@
         /* ADMIN */
         .admin-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 40px; }
         .admin-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 15px; }
-        .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;} /* Wrap para telas pequenas */
-        
+        .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .filter-btn { background: var(--bg-deep); border: 1px solid var(--border); color: var(--secondary); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; white-space: nowrap; margin-bottom: 5px;}
         .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
         .filter-btn.active { background: var(--primary); color: var(--bg-deep); border-color: var(--primary); font-weight: 700; }
         
-        .btn-export { background: var(--bg-deep); border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap;}
-        .btn-export:hover { background: var(--bg-panel-hover); border-color: var(--secondary); }
+        .btn-tool { background: var(--bg-deep); border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap;}
+        .btn-tool:hover { background: var(--bg-panel-hover); border-color: var(--secondary); }
 
         /* Busca */
         .search-container { position: relative; margin-right: 15px; width: auto; }
@@ -149,10 +167,15 @@
         .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); font-family: var(--font-tech); }
         .kpi-trend { font-size: 0.8rem; margin-top: 5px; color: var(--highlight); display: flex; align-items: center; gap: 5px; }
 
-        /* Cards Feed - Grid Responsivo Ajustado */
-        /* minmax ajustado de 350px para 280px para caber em telas mobile estreitas (ex: iPhone SE) */
+        /* Feed */
         .feed-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 60px; animation: fadeIn 0.5s ease forwards; }
-        
+        .feed-container.kanban-mode { display: flex; overflow-x: auto; gap: 20px; align-items: flex-start; padding-bottom: 20px; min-height: 500px; }
+
+        /* Kanban Columns */
+        .kanban-column { min-width: 300px; background: var(--bg-panel-hover); border-radius: 12px; padding: 15px; flex-shrink: 0; }
+        .kanban-header { font-weight: 700; margin-bottom: 15px; text-transform: uppercase; font-size: 0.8rem; color: var(--secondary); display: flex; align-items: center; gap: 8px; }
+        .feed-container.kanban-mode .lead-card { margin-bottom: 15px; }
+
         .lead-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; position: relative; transition: 0.3s; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .lead-card:hover { border-color: var(--secondary); transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
@@ -178,23 +201,27 @@
         .contact-item { display: flex; align-items: center; font-size: 0.85rem; color: var(--secondary); margin-bottom: 5px; font-family: var(--font-tech); flex-wrap: wrap; }
 
         .action-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .btn-group-row { display: flex; gap: 10px; }
         .btn-wpp { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: rgba(37, 211, 102, 0.1); color: #00a852; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: 600; transition: 0.2s; border: 1px solid rgba(37, 211, 102, 0.3); font-size: 0.9rem; }
         .btn-wpp:hover { background: #00a852; color: #fff; }
         .btn-email { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: rgba(211, 47, 47, 0.1); color: var(--highlight-email); text-decoration: none; padding: 12px; border-radius: 6px; font-weight: 600; transition: 0.2s; border: 1px solid rgba(211, 47, 47, 0.3); font-size: 0.9rem; }
         .btn-email:hover { background: var(--highlight-email); color: #fff; }
         
-        .btn-delete { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: var(--bg-deep); color: #c62828; border: 1px solid #ffcdd2; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-delete, .btn-edit { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: var(--bg-deep); border: 1px solid var(--border); padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-delete { color: #c62828; border-color: #ffcdd2; }
         .btn-delete:hover { background: #ffebee; border-color: #ef9a9a; }
+        .btn-edit { color: var(--primary); }
+        .btn-edit:hover { background: var(--bg-panel-hover); }
+
         body.dark-mode .btn-delete { background: rgba(198, 40, 40, 0.1); border-color: rgba(198, 40, 40, 0.3); color: #ef9a9a; }
         body.dark-mode .btn-delete:hover { background: rgba(198, 40, 40, 0.3); }
 
         /* Modal e Toast */
-        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(5px); padding: 20px; }
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(5px); padding: 20px; overflow-y: auto; }
         .modal-wrap.active { opacity: 1; visibility: visible; }
-        .login-box { background: var(--bg-panel); border: 1px solid var(--border); padding: 30px; border-radius: 12px; text-align: center; width: 100%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .login-box { background: var(--bg-panel); border: 1px solid var(--border); padding: 30px; border-radius: 12px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .modal-wrap.active .login-box { animation: zoomBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* Toast Popup Responsivo */
         .toast-popup { 
             position: fixed; bottom: 30px; right: 30px; 
             background: var(--bg-panel); color: var(--primary); 
@@ -203,65 +230,52 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
             transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
             z-index: 300; border: 1px solid var(--border); 
-            max-width: 90%; /* Limite para mobile */
+            max-width: 90%; 
         }
         .toast-popup.show { transform: translateY(0); animation: borderPulse 2s infinite; }
         
         .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         .btn-modal-cancel { background: transparent; border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 6px; cursor: pointer; flex: 1; }
         .btn-modal-confirm { background: var(--highlight-email); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+        .btn-modal-save { background: var(--primary); border: none; color: var(--bg-deep); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
         .btn-modal-confirm:hover { background: #b71c1c; }
 
-        /* =========================================
-           MEDIA QUERIES - RESPONSIVIDADE PROFUNDA
-           ========================================= */
+        .cta-box { display: none; margin-top: 20px; text-align: center; animation: fadeIn 0.5s; background: rgba(0, 200, 83, 0.1); padding: 20px; border-radius: 8px; border: 1px solid var(--highlight); }
+        .cta-box.active { display: block; }
         
-        /* Tablets e Notebooks Pequenos */
+        .date-tooltip { position: relative; cursor: help; border-bottom: 1px dotted var(--secondary); }
+
+        /* Media Queries */
         @media (max-width: 900px) {
             .hero-split { grid-template-columns: 1fr; gap: 30px; padding-top: 20px; }
             .hero-text { text-align: center; margin-top: 20px; }
             .hero-text h1 { min-height: auto; border-right: none; animation: none; }
             .hero-text p { margin: 0 auto 30px auto; }
-            
             .form-card { padding: 30px; max-width: 600px; margin: 0 auto; }
-            
             .admin-tools { flex-direction: column; align-items: stretch; gap: 15px; }
             .filter-group { flex-wrap: wrap; justify-content: center; }
-            
             .search-container { width: 100%; margin-right: 0; margin-bottom: 10px; }
             .search-input { width: 100%; }
             .search-input:focus { width: 100%; }
-            
             .kpi-container { grid-template-columns: 1fr; }
         }
 
-        /* Celulares */
         @media (max-width: 480px) {
             .container { padding: 0 15px; }
             .logo-img { height: 35px; }
             .btn-lock { padding: 6px 10px; font-size: 0.7rem; }
-            
             .hero-split { padding: 20px 0; }
             .form-card { padding: 20px; }
-            
-            /* Admin Tools Mobile */
             .admin-bar { padding: 15px 0; }
-            .filter-group { justify-content: flex-start; overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-            .filter-btn { flex-shrink: 0; margin-bottom: 0; }
             
-            .btn-export { width: 100%; justify-content: center; }
+            .filter-group { justify-content: stretch; overflow-x: visible; flex-wrap: wrap; gap: 10px; }
+            .filter-btn { flex: 1 1 45%; text-align: center; margin-bottom: 0; }
+            .btn-tool { flex: 1 1 100%; width: 100%; justify-content: center; }
             
-            /* Feed Mobile */
             .feed-container { grid-template-columns: 1fr; }
             .lead-card { padding: 20px; }
             .badge-status { right: 15px; top: -10px; font-size: 0.65rem; }
-            
-            /* Toast Mobile - Centralizado em baixo */
-            .toast-popup { 
-                bottom: 20px; right: auto; left: 50%; 
-                transform: translateX(-50%) translateY(150%); 
-                width: 90%; justify-content: center; 
-            }
+            .toast-popup { bottom: 20px; right: auto; left: 50%; transform: translateX(-50%) translateY(150%); width: 90%; justify-content: center; }
             .toast-popup.show { transform: translateX(-50%) translateY(0); }
         }
     </style>
@@ -272,7 +286,7 @@
         <div class="container flex-between">
             <img src="img/logo_oficial_cortado.png" alt="NitroCode" class="logo-img">
             <div class="header-actions">
-                <button class="btn-lock" onclick="toggleTheme()" aria-label="Alternar Tema Claro e Escuro">
+                <button class="btn-lock" onclick="toggleTheme()" aria-label="Alternar Tema">
                     <svg class="sys-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 </button>
                 <button class="btn-lock" onclick="openLogin()">ADMIN ACCESS</button>
@@ -289,16 +303,46 @@
                 </div>
                 <div class="form-card">
                     <form id="clientForm" onsubmit="submitForm(event)">
-                        <div><label class="form-label">Nome</label><input type="text" id="inpName" class="input-box" placeholder="Seu nome" required oninput="valForm()"></div>
-                        <div>
-                            <label class="form-label">WhatsApp (Opcional)</label>
-                            <input type="tel" id="inpPhone" class="input-box" placeholder="(DDD) 99999-9999" oninput="maskPhone(this); valForm()" maxlength="15">
+                        <input type="text" id="website_trap" class="honey-trap" tabindex="-1" autocomplete="off">
+
+                        <div class="floating-group">
+                            <input type="text" id="inpName" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <label class="floating-label">Nome Completo</label>
                         </div>
-                        <div><label class="form-label">E-mail</label><input type="email" id="inpEmail" class="input-box" placeholder="seu@email.com" required oninput="valForm()"></div>
-                        <div><label class="form-label">O que você precisa?</label><input type="text" id="inpTitle" class="input-box" placeholder="Ex: Site Institucional" required oninput="valForm()"></div>
-                        <div><label class="form-label">Detalhes</label><textarea id="inpDesc" class="input-box" rows="3" placeholder="Descreva brevemente..." required oninput="valForm()"></textarea></div>
-                        <button type="submit" id="btnSubmit" class="btn-nitro" disabled>Solicitar Orçamento</button>
+                        
+                        <div class="floating-group">
+                            <input type="tel" id="inpPhone" class="input-box" placeholder=" " oninput="maskPhone(this); valForm(); saveDraft()" maxlength="15">
+                            <label class="floating-label">WhatsApp (Opcional)</label>
+                        </div>
+                        <span class="helper-text">Não enviaremos spam. Promessa de dev.</span>
+
+                        <div class="floating-group">
+                            <input type="email" id="inpEmail" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <label class="floating-label">E-mail Profissional</label>
+                        </div>
+
+                        <div class="floating-group">
+                            <input type="text" id="inpTitle" class="input-box" placeholder=" " required oninput="valForm(); saveDraft()">
+                            <label class="floating-label">O que você precisa?</label>
+                        </div>
+
+                        <div class="floating-group">
+                            <textarea id="inpDesc" class="input-box" rows="3" placeholder=" " required oninput="valForm(); saveDraft()"></textarea>
+                            <label class="floating-label">Detalhes (Ex: Preciso de um sistema para estoque...)</label>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn-nitro" disabled>Receber Proposta Técnica</button>
                     </form>
+                    
+                    <div id="ctaBox" class="cta-box">
+                        <h3 style="margin-bottom:10px; color:var(--primary);">Recebemos seu contato!</h3>
+                        <p style="color:var(--secondary); margin-bottom:15px; font-size:0.9rem;">Para agilizar seu atendimento, chame nosso consultor agora.</p>
+                        <a href="https://wa.me/5511999999999" target="_blank" class="btn-wpp">
+                            <svg class="sys-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                            Falar no WhatsApp Agora
+                        </a>
+                        <button onclick="resetClientView()" style="background:none; border:none; text-decoration:underline; color:var(--secondary); margin-top:15px; cursor:pointer;">Enviar outro</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -323,10 +367,22 @@
                             <button class="filter-btn" onclick="setFilter('progress')" id="filter-progress">Andamento</button>
                             <button class="filter-btn" onclick="setFilter('finished')" id="filter-finished">Finalizados</button>
                         </div>
-                        <button class="btn-export" onclick="downloadCSV()">
-                            <svg class="sys-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            Exportar CSV
-                        </button>
+                        
+                        <div class="filter-group">
+                            <button class="btn-tool" onclick="toggleViewMode()" id="btnViewMode">
+                                <svg class="sys-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                Kanban
+                            </button>
+                            <button class="btn-tool" onclick="exportBackup()">
+                                <svg class="sys-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                Backup
+                            </button>
+                            <button class="btn-tool" onclick="document.getElementById('importInput').click()">
+                                <svg class="sys-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Restaurar
+                            </button>
+                            <input type="file" id="importInput" style="display:none" onchange="importBackup(this)" accept=".json">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -373,6 +429,24 @@
         </div>
     </div>
 
+    <div id="modalEdit" class="modal-wrap">
+        <div class="login-box">
+            <h3 style="color:var(--primary); margin-bottom: 20px;">Editar Lead</h3>
+            <input type="hidden" id="editId">
+            <div style="text-align:left;">
+                <label class="form-label">Nome</label><input type="text" id="editName" class="input-box">
+                <label class="form-label">Email</label><input type="email" id="editEmail" class="input-box">
+                <label class="form-label">Telefone</label><input type="text" id="editPhone" class="input-box" oninput="maskPhone(this)">
+                <label class="form-label">Título</label><input type="text" id="editTitle" class="input-box">
+                <label class="form-label">Descrição</label><textarea id="editDesc" class="input-box" rows="3"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeEdit()">Cancelar</button>
+                <button class="btn-modal-save" onclick="saveEdit()">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast-popup">
         <svg class="sys-icon large" style="color:var(--highlight)" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
         <div><strong style="display:block; color:var(--primary);">Recebido!</strong><span style="font-size:0.9rem; color:var(--secondary);">Sua solicitação foi enviada com sucesso.</span></div>
@@ -381,7 +455,7 @@
     <script>
         const ICONS = {
             lightning: `<svg class="sys-icon small" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-            gear: `<svg class="sys-icon small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+            gear: `<svg class="sys-icon small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
             reply: `<svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>`,
             check: `<svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
             whatsapp: `<svg class="sys-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`,
@@ -390,46 +464,48 @@
         };
 
         let savedData = localStorage.getItem('nitroCodeLeads');
-        let posts = savedData ? JSON.parse(savedData) : [
-            { id: 1, user: "Lucas Tech", date: "13/01/2026 às 14:00", phone: "(11) 98888-7777", email: "lucas@ex.com", title: "API de Integração", desc: "Preciso conectar meu e-commerce com o ERP Bling.", status: 'progress' },
-            { id: 2, user: "Ana Design", date: "12/01/2026 às 10:30", phone: "", email: "ana@ex.com", title: "Portfólio Web", desc: "Site minimalista para arquitetura.", status: 'replied' }
-        ];
-
+        let posts = savedData ? JSON.parse(savedData) : [];
+        
         let currentFilter = 'all';
+        let viewMode = 'list'; // list ou kanban
         let pendingDeleteId = null; 
-
-        // Brute Force vars
         let loginAttempts = 0;
         let lockoutTimer = null;
 
-        function saveToLocal() {
-            localStorage.setItem('nitroCodeLeads', JSON.stringify(posts));
+        function saveToLocal() { localStorage.setItem('nitroCodeLeads', JSON.stringify(posts)); }
+        function escapeHtml(text) { if (!text) return text; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+        async function sha256(message) { const msgBuffer = new TextEncoder().encode(message); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
+
+        // Time Ago Logic
+        function timeAgo(dateString) {
+            try {
+                // Formato esperado: "DD/MM/YYYY às HH:MM"
+                const [datePart, timePart] = dateString.split(' às ');
+                const [day, month, year] = datePart.split('/');
+                const [hour, min] = timePart.split(':');
+                
+                const postDate = new Date(year, month - 1, day, hour, min);
+                const now = new Date();
+                const diffInSeconds = Math.floor((now - postDate) / 1000);
+
+                if (diffInSeconds < 60) return "Agora mesmo";
+                const diffInMinutes = Math.floor(diffInSeconds / 60);
+                if (diffInMinutes < 60) return `Há ${diffInMinutes} min`;
+                const diffInHours = Math.floor(diffInMinutes / 60);
+                if (diffInHours < 24) return `Há ${diffInHours} horas`;
+                const diffInDays = Math.floor(diffInHours / 24);
+                if (diffInDays === 1) return "Ontem";
+                if (diffInDays < 30) return `Há ${diffInDays} dias`;
+                return datePart; 
+            } catch (e) {
+                return dateString;
+            }
         }
 
-        const viewClient = document.getElementById('view-client');
-        const viewAdmin = document.getElementById('view-admin');
-        const modal = document.getElementById('modalLogin');
-        const modalConf = document.getElementById('modalConfirm');
-        const feedDiv = document.getElementById('feed');
-        const btnSub = document.getElementById('btnSubmit');
-        const toast = document.getElementById('toast');
-
-        function escapeHtml(text) {
-            if (!text) return text;
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
+        // Typing Effect
         const textToType = "Sua ideia,\nNosso Código.";
         const typingElement = document.getElementById('typing-title');
         let charIndex = 0;
-
         function typeWriter() {
             if (charIndex < textToType.length) {
                 typingElement.innerHTML += textToType.charAt(charIndex);
@@ -442,20 +518,25 @@
             typeWriter();
             if ("Notification" in window) Notification.requestPermission();
             
+            // Draft Load
+            loadDraft();
+
             if(sessionStorage.getItem('nitroAuth') === 'true') {
-                viewClient.classList.add('hidden');
-                viewAdmin.classList.remove('hidden');
+                document.getElementById('view-client').classList.add('hidden');
+                document.getElementById('view-admin').classList.remove('hidden');
                 renderAdmin();
             }
-            if(localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-            }
+            if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
         };
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        function toggleViewMode() {
+            viewMode = viewMode === 'list' ? 'kanban' : 'list';
+            renderAdmin();
         }
 
         function maskPhone(input) {
@@ -465,28 +546,49 @@
             input.value = v;
         }
 
-        function openLogin() {
-            modal.classList.add('active');
-            document.getElementById('passInput').value = '';
-            setTimeout(() => document.getElementById('passInput').focus(), 100);
+        // Draft Logic
+        function saveDraft() {
+            const draft = {
+                name: document.getElementById('inpName').value,
+                phone: document.getElementById('inpPhone').value,
+                email: document.getElementById('inpEmail').value,
+                title: document.getElementById('inpTitle').value,
+                desc: document.getElementById('inpDesc').value
+            };
+            localStorage.setItem('clientDraft', JSON.stringify(draft));
         }
-        function closeLogin() { modal.classList.remove('active'); }
-        
+
+        function loadDraft() {
+            const draft = JSON.parse(localStorage.getItem('clientDraft'));
+            if(draft) {
+                document.getElementById('inpName').value = draft.name || '';
+                document.getElementById('inpPhone').value = draft.phone || '';
+                document.getElementById('inpEmail').value = draft.email || '';
+                document.getElementById('inpTitle').value = draft.title || '';
+                document.getElementById('inpDesc').value = draft.desc || '';
+                valForm(); // re-validate to enable button if ready
+            }
+        }
+
+        function clearDraft() {
+            localStorage.removeItem('clientDraft');
+        }
+
+        // Auth
+        function openLogin() { document.getElementById('modalLogin').classList.add('active'); document.getElementById('passInput').value = ''; setTimeout(() => document.getElementById('passInput').focus(), 100); }
+        function closeLogin() { document.getElementById('modalLogin').classList.remove('active'); }
         async function checkPass() {
             const btnLogin = document.getElementById('btnLoginBtn');
             const inputPass = document.getElementById('passInput');
-            
             if (lockoutTimer) return;
-
             const inputHash = await sha256(inputPass.value);
             const adminHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
 
             if(inputHash === adminHash) {
                 sessionStorage.setItem('nitroAuth', 'true');
-                loginAttempts = 0; 
-                closeLogin();
-                viewClient.classList.add('hidden');
-                viewAdmin.classList.remove('hidden');
+                loginAttempts = 0; closeLogin();
+                document.getElementById('view-client').classList.add('hidden');
+                document.getElementById('view-admin').classList.remove('hidden');
                 renderAdmin();
             } else {
                 loginAttempts++;
@@ -494,66 +596,43 @@
                 box.style.transform = 'translateX(10px)';
                 setTimeout(() => box.style.transform = 'translateX(-10px)', 100);
                 setTimeout(() => box.style.transform = 'translateX(0)', 200);
-                
                 if (loginAttempts >= 3) {
-                    lockoutTimer = true;
-                    btnLogin.disabled = true;
-                    btnLogin.style.background = '#666';
-                    let timeLeft = 30;
-                    
+                    lockoutTimer = true; btnLogin.disabled = true; btnLogin.style.background = '#666'; let timeLeft = 30;
                     const interval = setInterval(() => {
-                        btnLogin.innerText = `Aguarde ${timeLeft}s`;
-                        timeLeft--;
-                        if(timeLeft < 0) {
-                            clearInterval(interval);
-                            lockoutTimer = null;
-                            loginAttempts = 0;
-                            btnLogin.disabled = false;
-                            btnLogin.style.background = ''; 
-                            btnLogin.innerText = 'Entrar';
-                        }
+                        btnLogin.innerText = `Aguarde ${timeLeft}s`; timeLeft--;
+                        if(timeLeft < 0) { clearInterval(interval); lockoutTimer = null; loginAttempts = 0; btnLogin.disabled = false; btnLogin.style.background = ''; btnLogin.innerText = 'Entrar'; }
                     }, 1000);
                 }
             }
         }
-        
-        function logout() {
-            sessionStorage.removeItem('nitroAuth');
-            viewAdmin.classList.add('hidden');
-            viewClient.classList.remove('hidden');
-        }
+        function logout() { sessionStorage.removeItem('nitroAuth'); document.getElementById('view-admin').classList.add('hidden'); document.getElementById('view-client').classList.remove('hidden'); }
 
+        // Client Form
         function valForm() {
             const name = document.getElementById('inpName').value.trim();
             const emailInp = document.getElementById('inpEmail');
             const phoneInp = document.getElementById('inpPhone');
             const title = document.getElementById('inpTitle').value.trim();
             const desc = document.getElementById('inpDesc').value.trim();
-            
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const isEmailValid = emailRegex.test(emailInp.value.trim());
             const isPhoneValid = phoneInp.value.length === 0 || phoneInp.value.length >= 14; 
-
-            if (emailInp.value.length > 0 && !isEmailValid) {
-                emailInp.classList.add('error');
-            } else {
-                emailInp.classList.remove('error');
-            }
-            
-            if (phoneInp.value.length > 0 && !isPhoneValid) {
-                phoneInp.classList.add('error');
-            } else {
-                phoneInp.classList.remove('error');
-            }
-
-            let ok = name && isEmailValid && isPhoneValid && title && desc;
-            btnSub.disabled = !ok;
+            if (emailInp.value.length > 0 && !isEmailValid) emailInp.classList.add('error'); else emailInp.classList.remove('error');
+            if (phoneInp.value.length > 0 && !isPhoneValid) phoneInp.classList.add('error'); else phoneInp.classList.remove('error');
+            document.getElementById('btnSubmit').disabled = !(name && isEmailValid && isPhoneValid && title && desc);
         }
 
         function submitForm(e) {
             e.preventDefault();
-            btnSub.innerHTML = '<span class="spinner"></span> Enviando...';
             
+            // Honeypot Check
+            if(document.getElementById('website_trap').value !== '') {
+                console.log("Spam detected.");
+                return; // Silent fail
+            }
+
+            const btn = document.getElementById('btnSubmit');
+            btn.innerHTML = '<span class="spinner"></span> Enviando...';
             const tempName = document.getElementById('inpName').value;
             const tempTitle = document.getElementById('inpTitle').value;
 
@@ -566,63 +645,111 @@
                     email: document.getElementById('inpEmail').value,
                     title: tempTitle,
                     desc: document.getElementById('inpDesc').value,
-                    status: 'new'
+                    status: 'new',
+                    logs: [{date: new Date().toLocaleString(), msg: 'Lead criado'}]
                 };
                 posts.unshift(newPost);
                 saveToLocal();
-                
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 4000);
+                clearDraft();
                 
                 if (Notification.permission === "granted") {
-                    new Notification("Novo Lead Recebido!", {
-                        body: `${tempName} solicitou: ${tempTitle}`,
-                        icon: "img/logo_oficial_cortado.png"
-                    });
+                    new Notification("Novo Lead Recebido!", { body: `${tempName} solicitou: ${tempTitle}`, icon: "img/logo_oficial_cortado.png" });
                 }
 
                 document.getElementById('clientForm').reset();
-                document.querySelectorAll('.input-box').forEach(el => el.classList.remove('error'));
-                valForm();
-                btnSub.innerHTML = 'Solicitar Orçamento';
+                document.getElementById('clientForm').style.display = 'none';
+                document.getElementById('ctaBox').classList.add('active');
+                
+                btn.innerHTML = 'Receber Proposta Técnica';
             }, 1500);
         }
 
+        function resetClientView() {
+            document.getElementById('clientForm').style.display = 'block';
+            document.getElementById('ctaBox').classList.remove('active');
+        }
+
+        // Admin Logic
         function changeStatus(id, newStatus) {
             const post = posts.find(p => p.id === id);
             if(post) {
                 post.status = newStatus;
+                if(!post.logs) post.logs = [];
+                post.logs.push({date: new Date().toLocaleString(), msg: `Status alterado para ${newStatus}`});
                 saveToLocal();
                 renderAdmin();
             }
         }
 
-        function deletePost(id) {
-            pendingDeleteId = id;
-            modalConf.classList.add('active');
-        }
-
-        function closeConfirm() {
-            modalConf.classList.remove('active');
-            pendingDeleteId = null;
-        }
-
+        function deletePost(id) { pendingDeleteId = id; document.getElementById('modalConfirm').classList.add('active'); }
+        function closeConfirm() { document.getElementById('modalConfirm').classList.remove('active'); pendingDeleteId = null; }
         function executeDelete() {
             if (pendingDeleteId) {
                 posts = posts.filter(p => p.id !== pendingDeleteId);
-                saveToLocal();
-                renderAdmin();
-                closeConfirm();
-
-                const originalContent = toast.innerHTML;
-                toast.innerHTML = '<div><strong style="display:block; color:var(--primary);">Excluído!</strong><span style="font-size:0.9rem; color:var(--secondary);">Lead removido com sucesso.</span></div>';
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => { toast.innerHTML = originalContent; }, 500);
-                }, 3000);
+                saveToLocal(); renderAdmin(); closeConfirm();
+                showToast("Excluído!", "Lead removido com sucesso.");
             }
+        }
+
+        // Edit Logic
+        function openEdit(id) {
+            const post = posts.find(p => p.id === id);
+            if(post) {
+                document.getElementById('editId').value = post.id;
+                document.getElementById('editName').value = post.user;
+                document.getElementById('editEmail').value = post.email;
+                document.getElementById('editPhone').value = post.phone;
+                document.getElementById('editTitle').value = post.title;
+                document.getElementById('editDesc').value = post.desc;
+                document.getElementById('modalEdit').classList.add('active');
+            }
+        }
+        function closeEdit() { document.getElementById('modalEdit').classList.remove('active'); }
+        function saveEdit() {
+            const id = parseInt(document.getElementById('editId').value);
+            const post = posts.find(p => p.id === id);
+            if(post) {
+                post.user = document.getElementById('editName').value;
+                post.email = document.getElementById('editEmail').value;
+                post.phone = document.getElementById('editPhone').value;
+                post.title = document.getElementById('editTitle').value;
+                post.desc = document.getElementById('editDesc').value;
+                if(!post.logs) post.logs = [];
+                post.logs.push({date: new Date().toLocaleString(), msg: `Dados editados`});
+                saveToLocal();
+                closeEdit();
+                renderAdmin();
+                showToast("Sucesso!", "Dados atualizados.");
+            }
+        }
+
+        // Backup Logic
+        function exportBackup() {
+            if(posts.length === 0) { alert("Sem dados."); return; }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(posts));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "nitrocode_backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+        function importBackup(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(Array.isArray(imported)) {
+                        posts = imported;
+                        saveToLocal();
+                        renderAdmin();
+                        showToast("Restaurado!", "Backup importado com sucesso.");
+                    } else { alert("Arquivo inválido."); }
+                } catch(err) { alert("Erro ao ler arquivo."); }
+            };
+            reader.readAsText(file);
         }
 
         function setFilter(filterType) {
@@ -632,132 +759,128 @@
             renderAdmin();
         }
 
-        function downloadCSV() {
-            if(posts.length === 0) { alert("Sem dados para exportar."); return; }
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "ID,Data,Nome,Email,Telefone,Titulo,Descricao,Status\n";
-            posts.forEach(p => {
-                const row = [p.id, p.date, `"${p.user}"`, p.email, p.phone, `"${p.title}"`, `"${p.desc.replace(/\n/g, ' ')}"`, p.status].join(",");
-                csvContent += row + "\n";
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "nitrocode_leads.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<div><strong style="display:block; color:var(--primary);">${title}</strong><span style="font-size:0.9rem; color:var(--secondary);">${msg}</span></div>`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        function updateKPIs() {
-            const total = posts.length;
-            const newLeads = posts.filter(p => p.status === 'new').length;
-            const finished = posts.filter(p => p.status === 'finished').length;
-
-            document.getElementById('kpi-total').textContent = total;
-            document.getElementById('kpi-new').textContent = newLeads;
-            document.getElementById('kpi-done').textContent = finished;
-        }
-
-        function renderAdmin() {
-            updateKPIs();
-            feedDiv.innerHTML = '';
+        function createCardHTML(p) {
+            const safeUser = escapeHtml(p.user);
+            const safeTitle = escapeHtml(p.title);
+            const safeDesc = escapeHtml(p.desc);
+            const relativeDate = timeAgo(p.date);
             
-            let filteredPosts = posts;
-            
-            if(currentFilter !== 'all') {
-                filteredPosts = posts.filter(p => p.status === currentFilter);
+            const mailSubject = encodeURIComponent(`NitroCode: Orçamento para ${p.title}`);
+            const mailBody = encodeURIComponent(`Olá ${p.user},\n\nRecebemos sua solicitação sobre "${p.title}" na NitroCode.\n\nGostaríamos de entender melhor sua necessidade para enviar uma proposta técnica.\n\nAtenciosamente,\nEquipe NitroCode.`);
+            const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${p.email}&su=${mailSubject}&body=${mailBody}`;
+
+            let whatsappButtonHTML = '';
+            if(p.phone && p.phone.trim() !== '') {
+                const cleanPhone = p.phone.replace(/\D/g,'');
+                const wppUrl = `https://wa.me/55${cleanPhone}?text=Olá ${encodeURIComponent(p.user)}, vi sua solicitação na NitroCode.`;
+                whatsappButtonHTML = `<a href="${wppUrl}" target="_blank" class="btn-wpp">${ICONS.whatsapp} WhatsApp</a>`;
             }
 
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            if(searchTerm) {
-                filteredPosts = filteredPosts.filter(p => 
-                    p.user.toLowerCase().includes(searchTerm) || 
-                    p.title.toLowerCase().includes(searchTerm) ||
-                    p.email.toLowerCase().includes(searchTerm)
-                );
+            let cardClass = '', badgeHtml = '';
+            switch(p.status) {
+                case 'new': cardClass = 'status-new'; badgeHtml = `<div class="badge-status badge-new">${ICONS.lightning} NOVO</div>`; break;
+                case 'progress': cardClass = 'status-progress'; badgeHtml = `<div class="badge-status badge-progress">${ICONS.gear} ANDAMENTO</div>`; break;
+                case 'replied': badgeHtml = `<div class="badge-status badge-replied">${ICONS.reply} RESPONDIDO</div>`; break;
+                case 'finished': cardClass = 'status-finished'; badgeHtml = `<div class="badge-status badge-finished">${ICONS.check} FIM</div>`; break;
             }
 
-            if(filteredPosts.length === 0) {
-                feedDiv.innerHTML = `<div style="grid-column: 1/-1;" class="empty-state"><div class="empty-icon-container">${ICONS.empty}</div><p>Nenhuma solicitação encontrada neste filtro.</p></div>`;
-                return;
-            }
-
-            filteredPosts.forEach(p => {
-                const safeUser = escapeHtml(p.user);
-                const safeTitle = escapeHtml(p.title);
-                const safeDesc = escapeHtml(p.desc);
-                const safeEmail = escapeHtml(p.email);
-                const safePhone = escapeHtml(p.phone);
-
-                const mailSubject = encodeURIComponent(`NitroCode: Orçamento para ${p.title}`);
-                const mailBody = encodeURIComponent(`Olá ${p.user},\n\nRecebemos sua solicitação sobre "${p.title}" na NitroCode.\n\nGostaríamos de entender melhor sua necessidade para enviar uma proposta técnica.\n\nAtenciosamente,\nEquipe NitroCode.`);
-                const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${p.email}&su=${mailSubject}&body=${mailBody}`;
-
-                let whatsappButtonHTML = '';
-                if(p.phone && p.phone.trim() !== '') {
-                    const cleanPhone = p.phone.replace(/\D/g,'');
-                    const wppUrl = `https://wa.me/55${cleanPhone}?text=Olá ${encodeURIComponent(p.user)}, vi sua solicitação na NitroCode.`;
-                    whatsappButtonHTML = `<a href="${wppUrl}" target="_blank" class="btn-wpp">${ICONS.whatsapp} Chamar no WhatsApp</a>`;
-                } else {
-                    whatsappButtonHTML = `<div style="text-align:center; color:var(--secondary); font-size:0.8rem; padding:5px;">(Sem telefone informado)</div>`;
-                }
-
-                let cardClass = '', badgeHtml = '';
-                switch(p.status) {
-                    case 'new': 
-                        cardClass = 'status-new'; 
-                        badgeHtml = `<div class="badge-status badge-new">${ICONS.lightning} NOVO LEAD</div>`; 
-                        break;
-                    case 'progress': 
-                        cardClass = 'status-progress'; 
-                        badgeHtml = `<div class="badge-status badge-progress">${ICONS.gear} EM ANDAMENTO</div>`; 
-                        break;
-                    case 'replied': 
-                        badgeHtml = `<div class="badge-status badge-replied">${ICONS.reply} RESPONDIDO</div>`; 
-                        break;
-                    case 'finished': 
-                        cardClass = 'status-finished'; 
-                        badgeHtml = `<div class="badge-status badge-finished">${ICONS.check} FINALIZADO</div>`; 
-                        break;
-                }
-
-                const html = `
-                    <div class="lead-card ${cardClass}">
-                        ${badgeHtml}
-                        <div class="lead-header">
-                            <div><div style="font-weight:700; color:var(--primary);">${safeUser}</div><div style="font-size:0.8rem; color:var(--secondary); font-family:var(--font-tech)">${p.date}</div></div>
+            return `
+                <div class="lead-card ${cardClass}">
+                    ${badgeHtml}
+                    <div class="lead-header">
+                        <div>
+                            <div style="font-weight:700; color:var(--primary);">${safeUser}</div>
+                            <div class="date-tooltip" title="${p.date}" style="font-size:0.8rem; color:var(--secondary); font-family:var(--font-tech)">${relativeDate}</div>
                         </div>
-                        <div class="lead-title">${safeTitle}</div>
-                        <div class="lead-desc">${safeDesc}</div>
-                        
-                        <div class="lead-contact">
-                            <div class="contact-item"><span class="contact-icon">${ICONS.mail}</span> ${safeEmail}</div>
-                            <div class="contact-item"><span class="contact-icon">${ICONS.whatsapp}</span> ${safePhone ? safePhone : 'Não informado'}</div>
-                        </div>
-
-                        <div class="action-buttons">
+                    </div>
+                    <div class="lead-title">${safeTitle}</div>
+                    <div class="lead-desc">${safeDesc}</div>
+                    <div class="lead-contact">
+                        <div class="contact-item"><span class="contact-icon">${ICONS.mail}</span> ${escapeHtml(p.email)}</div>
+                        <div class="contact-item"><span class="contact-icon">${ICONS.whatsapp}</span> ${p.phone ? escapeHtml(p.phone) : '-'}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <div class="btn-group-row">
                             ${whatsappButtonHTML}
-                            <a href="${gmailLink}" target="_blank" class="btn-email">${ICONS.mail} Responder no Gmail</a>
-                            
-                            <button onclick="deletePost(${p.id})" class="btn-delete" aria-label="Excluir este lead permanentemente">
+                            <a href="${gmailLink}" target="_blank" class="btn-email">${ICONS.mail} Gmail</a>
+                        </div>
+                        <div class="btn-group-row">
+                            <button onclick="openEdit(${p.id})" class="btn-edit">
+                                <svg class="sys-icon small" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Editar
+                            </button>
+                            <button onclick="deletePost(${p.id})" class="btn-delete" aria-label="Excluir">
                                 <svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 Excluir
                             </button>
                         </div>
-                        <div class="status-control">
-                            <label style="font-size:0.7rem; color:var(--secondary); text-transform:uppercase; margin-bottom:5px; display:block;">Alterar Status:</label>
-                            <select class="status-select" onchange="changeStatus(${p.id}, this.value)">
-                                <option value="new" ${p.status === 'new' ? 'selected' : ''}>⚡ Novo Lead</option>
-                                <option value="replied" ${p.status === 'replied' ? 'selected' : ''}>↩️ Já Respondido</option>
-                                <option value="progress" ${p.status === 'progress' ? 'selected' : ''}>⚙️ Em Andamento</option>
-                                <option value="finished" ${p.status === 'finished' ? 'selected' : ''}>✅ Finalizado</option>
-                            </select>
-                        </div>
                     </div>
-                `;
-                feedDiv.innerHTML += html;
-            });
+                    <div class="status-control">
+                        <select class="status-select" onchange="changeStatus(${p.id}, this.value)">
+                            <option value="new" ${p.status === 'new' ? 'selected' : ''}>⚡ Novo Lead</option>
+                            <option value="replied" ${p.status === 'replied' ? 'selected' : ''}>↩️ Já Respondido</option>
+                            <option value="progress" ${p.status === 'progress' ? 'selected' : ''}>⚙️ Em Andamento</option>
+                            <option value="finished" ${p.status === 'finished' ? 'selected' : ''}>✅ Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateKPIs() {
+            document.getElementById('kpi-total').textContent = posts.length;
+            document.getElementById('kpi-new').textContent = posts.filter(p => p.status === 'new').length;
+            document.getElementById('kpi-done').textContent = posts.filter(p => p.status === 'finished').length;
+        }
+
+        function renderAdmin() {
+            updateKPIs();
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+            
+            // Filtros de busca
+            let filtered = posts;
+            if(currentFilter !== 'all') filtered = posts.filter(p => p.status === currentFilter);
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if(term) filtered = filtered.filter(p => p.user.toLowerCase().includes(term) || p.title.toLowerCase().includes(term));
+
+            // Modo Kanban
+            if(viewMode === 'kanban') {
+                feed.classList.add('kanban-mode');
+                const cols = {
+                    'new': { title: 'Novos', items: [] },
+                    'progress': { title: 'Em Andamento', items: [] },
+                    'replied': { title: 'Respondidos', items: [] },
+                    'finished': { title: 'Finalizados', items: [] }
+                };
+                filtered.forEach(p => { if(cols[p.status]) cols[p.status].items.push(p); });
+
+                Object.keys(cols).forEach(key => {
+                    const col = cols[key];
+                    let itemsHtml = col.items.map(p => createCardHTML(p)).join('');
+                    feed.innerHTML += `
+                        <div class="kanban-column">
+                            <div class="kanban-header">${col.title} (${col.items.length})</div>
+                            ${itemsHtml}
+                        </div>
+                    `;
+                });
+            } else {
+                // Modo Lista
+                feed.classList.remove('kanban-mode');
+                if(filtered.length === 0) {
+                    feed.innerHTML = `<div style="grid-column: 1/-1;" class="empty-state"><div class="empty-icon-container">${ICONS.empty}</div><p>Nada encontrado.</p></div>`;
+                } else {
+                    filtered.forEach(p => feed.innerHTML += createCardHTML(p));
+                }
+            }
         }
         
         document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') checkPass(); });
