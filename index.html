@@ -5,43 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NitroCode | Control Center</title>
 
+    <meta property="og:title" content="NitroCode | Control Center">
+    <meta property="og:description" content="Solicite seu orçamento de desenvolvimento web e automação. Painel administrativo integrado.">
+    <meta property="og:image" content="img/logo_oficial_cortado.png">
+    <meta property="og:url" content="https://nitrocode.com.br"> <meta property="og:type" content="website">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
-           CONFIGURAÇÕES VISUAIS (LIGHT THEME)
+           CONFIGURAÇÕES VISUAIS
            ========================================= */
         :root {
-            /* Fundo Branco e Painéis Claros */
             --bg-deep: #ffffff;
             --bg-panel: #f8f9fa;
             --bg-panel-hover: #eeeeee;
-            
-            /* Texto Preto */
             --primary: #000000;
             --secondary: #555555;
-            
-            /* Acento (Nardo Gray) */
             --accent: #7E8082; 
-            
-            /* VOLTA DAS CORES VIBRANTES (Ajustadas para fundo claro) */
-            --highlight: #00c853;      /* Verde (Novo) */
-            --status-progress: #ff9100;/* Laranja (Em andamento) */
-            --status-replied: #2979ff; /* Azul (Respondido) */
-            --status-done: #616161;    /* Cinza (Finalizado) */
-            --highlight-email: #d32f2f;/* Vermelho (Email) */
-            
-            /* Bordas */
+            --highlight: #00c853;
+            --status-progress: #ff9100;
+            --status-replied: #2979ff;
+            --status-done: #616161;
+            --highlight-email: #d32f2f;
             --border: #e0e0e0;
-            
             --font-ui: 'Outfit', sans-serif;
             --font-tech: 'Space Mono', monospace;
+            --logo-filter: invert(1);
+        }
+
+        body.dark-mode {
+            --bg-deep: #121212;
+            --bg-panel: #1e1e1e;
+            --bg-panel-hover: #2d2d2d;
+            --primary: #ffffff;
+            --secondary: #b0b0b0;
+            --border: #333333;
+            --logo-filter: none;
         }
 
         html { scroll-behavior: smooth; }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -51,26 +56,22 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Padrão de fundo sutil em cinza */
             background-image: 
                 linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
             overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; }
         .hidden { display: none !important; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
 
-        /* === ÍCONES SVG === */
-        .sys-icon {
-            width: 18px; height: 18px; vertical-align: middle; fill: none;
-            stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-        }
+        /* ÍCONES */
+        .sys-icon { width: 18px; height: 18px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .sys-icon.large { width: 32px; height: 32px; }
         .sys-icon.small { width: 14px; height: 14px; }
-        
         .contact-icon { color: var(--accent); margin-right: 8px; }
 
         /* Animações */
@@ -81,127 +82,116 @@
         @keyframes blink { 50% { border-color: transparent; } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .spinner {
-            display: inline-block; width: 16px; height: 16px;
-            border: 2px solid rgba(0,0,0,0.2); border-radius: 50%; border-top-color: #000;
-            animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle;
-        }
+        /* ALTERAÇÃO 4: Animação de Erro (Shake) */
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
 
-        .empty-state { text-align: center; padding: 60px 20px; color: #888; border: 1px dashed #ccc; border-radius: 12px; grid-column: 1/-1; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-radius: 50%; border-top-color: var(--primary); animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--secondary); border: 1px dashed var(--border); border-radius: 12px; grid-column: 1/-1; }
         .empty-icon-container { color: #ccc; margin-bottom: 15px; }
 
         /* HEADER */
-        header {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 0;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .logo-img { height: 50px; transition: transform 0.3s; /* Removido invert(1) pois a logo original deve ser escura, se for branca precisa ajustar */ } 
-        /* Se a sua imagem original for preta, use assim. Se for branca, use filter: invert(1) para virar preta no fundo branco. 
-           Vou assumir que você quer manter a logo visível. Se ela for branca, descomente a linha abaixo: */
-        .logo-img { filter: invert(1); } /* Inverte para preto se a original for branca */
-
+        header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 15px 0; position: sticky; top: 0; z-index: 100; }
+        body.dark-mode header { background: rgba(18, 18, 18, 0.9); }
+        .logo-img { height: 50px; transition: transform 0.3s; filter: var(--logo-filter); } 
         .logo-img:hover { transform: scale(1.05); }
-        .btn-lock { background: #fff; border: 1px solid #ccc; color: #666; padding: 8px 16px; border-radius: 6px; font-family: var(--font-tech); font-size: 0.8rem; cursor: pointer; transition: 0.3s; }
-        .btn-lock:hover { border-color: #000; color: #000; background: #f0f0f0; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-lock { background: var(--bg-deep); border: 1px solid var(--border); color: var(--secondary); padding: 8px 16px; border-radius: 6px; font-family: var(--font-tech); font-size: 0.8rem; cursor: pointer; transition: 0.3s; }
+        .btn-lock:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-panel); }
 
-        /* ÁREA CLIENTE */
+        /* CLIENTE */
         .hero-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; min-height: 80vh; }
-        .hero-text h1 {
-            font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px;
-            /* Texto Preto Sólido */
-            color: #000;
-            min-height: 3.8rem; border-right: 3px solid #000; display: inline-block; animation: blink 0.7s step-end infinite; white-space: pre-wrap;
-        }
+        .hero-text h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; color: var(--primary); min-height: 3.8rem; border-right: 3px solid var(--primary); display: inline-block; animation: blink 0.7s step-end infinite; white-space: pre-wrap; }
         .hero-text p { font-size: 1.1rem; color: var(--secondary); max-width: 450px; margin-bottom: 30px; }
 
         /* Form */
-        .form-card {
-            background: #ffffff; border: 1px solid var(--border); padding: 40px; border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1); backdrop-filter: blur(10px);
-            animation: slideInRight 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.5s; opacity: 0;
-        }
-        .form-label { display: block; margin-bottom: 8px; color: #333; font-weight: 700; font-family: var(--font-tech); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .form-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); backdrop-filter: blur(10px); animation: slideInRight 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.5s; opacity: 0; }
+        .form-label { display: block; margin-bottom: 8px; color: var(--primary); font-weight: 700; font-family: var(--font-tech); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Inputs Claros */
-        .input-box { width: 100%; background: #f9f9f9; border: 1px solid #ccc; padding: 15px; color: #000; border-radius: 8px; font-size: 1rem; margin-bottom: 20px; transition: 0.3s; }
-        .input-box:focus { outline: none; border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); transform: scale(1.01); background: #fff; }
+        .input-box { width: 100%; background: var(--bg-deep); border: 1px solid #ccc; padding: 15px; color: var(--primary); border-radius: 8px; font-size: 1rem; margin-bottom: 20px; transition: 0.3s; }
+        .input-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); transform: scale(1.01); background: var(--bg-deep); }
         
-        /* Botão Principal Preto */
-        .btn-nitro { width: 100%; padding: 16px; background: #000; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
-        .btn-nitro:hover { background: #333; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        /* ALTERAÇÃO 4: Estilo de Erro Visual no Input */
+        .input-box.error { border-color: var(--highlight-email); animation: shake 0.3s; background: rgba(211, 47, 47, 0.05); }
+
+        .btn-nitro { width: 100%; padding: 16px; background: var(--primary); color: var(--bg-deep); border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
+        .btn-nitro:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .btn-nitro:disabled { background: #ccc; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+        body.dark-mode .btn-nitro:disabled { background: #333; color: #555; }
 
-        /* ÁREA ADMIN */
-        .admin-bar { background: #fff; border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 40px; }
+        /* ADMIN */
+        .admin-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 40px; }
         .admin-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 15px; }
-        .filter-group { display: flex; gap: 8px; }
-        
-        /* Botões de Filtro Claros */
-        .filter-btn { background: #fff; border: 1px solid #ccc; color: #666; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
-        .filter-btn:hover { border-color: #000; color: #000; }
-        .filter-btn.active { background: #000; color: #fff; border-color: #000; font-weight: 700; }
-        
-        .btn-export { background: #fff; border: 1px solid #ccc; color: #333; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
-        .btn-export:hover { background: #f0f0f0; border-color: #999; }
+        .filter-group { display: flex; gap: 8px; align-items: center;}
+        .filter-btn { background: var(--bg-deep); border: 1px solid var(--border); color: var(--secondary); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
+        .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-btn.active { background: var(--primary); color: var(--bg-deep); border-color: var(--primary); font-weight: 700; }
+        .btn-export { background: var(--bg-deep); border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+        .btn-export:hover { background: var(--bg-panel-hover); border-color: var(--secondary); }
 
+        /* Busca */
+        .search-container { position: relative; margin-right: 15px; }
+        .search-input { padding: 8px 12px 8px 35px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-deep); color: var(--primary); font-family: var(--font-ui); font-size: 0.9rem; width: 200px; transition: 0.3s; }
+        .search-input:focus { width: 250px; border-color: var(--primary); outline: none; }
+        .search-icon-abs { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--secondary); }
+
+        /* KPI */
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .kpi-title { font-size: 0.8rem; text-transform: uppercase; color: var(--secondary); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); font-family: var(--font-tech); }
+        .kpi-trend { font-size: 0.8rem; margin-top: 5px; color: var(--highlight); display: flex; align-items: center; gap: 5px; }
+
+        /* Cards */
         .feed-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; padding-bottom: 60px; animation: fadeIn 0.5s ease forwards; }
+        .lead-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; position: relative; transition: 0.3s; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .lead-card:hover { border-color: var(--secondary); transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        /* Card Claro */
-        .lead-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 25px; position: relative; transition: 0.3s; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .lead-card:hover { border-color: #999; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .status-new { animation: borderPulse 2s infinite; border-color: var(--highlight) !important; background: rgba(0, 200, 83, 0.05); }
+        .status-progress { border-color: var(--status-progress) !important; background: rgba(255, 145, 0, 0.05); }
+        .status-finished { opacity: 0.7; background: var(--bg-deep); border-color: var(--border) !important; }
+        .status-finished:hover { opacity: 1; border-color: var(--secondary) !important; }
 
-        /* Estados dos Cards (Cores de Volta!) */
-        .status-new { animation: borderPulse 2s infinite; border-color: var(--highlight) !important; background: #f0fff4; } /* Fundo levemente esverdeado */
-        .status-progress { border-color: var(--status-progress) !important; background: #fff8e1; } /* Fundo levemente laranja */
-        .status-finished { opacity: 0.7; background: #f5f5f5; border-color: #ddd !important; }
-        .status-finished:hover { opacity: 1; border-color: #bbb !important; }
-
-        /* Badges Coloridas */
         .badge-status { position: absolute; top: -12px; right: 20px; font-weight: 800; font-size: 0.7rem; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; display: flex; align-items: center; gap: 6px; color: #fff; }
         .badge-new { background: var(--highlight); }
         .badge-progress { background: var(--status-progress); }
         .badge-replied { background: var(--status-replied); }
         .badge-finished { background: var(--status-done); }
 
-        .status-control { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; }
-        .status-select { width: 100%; background: #fff; color: #333; border: 1px solid #ccc; padding: 8px; border-radius: 6px; font-family: var(--font-tech); font-size: 0.8rem; cursor: pointer; }
-        .status-select:focus { outline: none; border-color: #000; }
+        .status-control { margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); }
+        .status-select { width: 100%; background: var(--bg-deep); color: var(--primary); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-family: var(--font-tech); font-size: 0.8rem; cursor: pointer; }
+        .status-select:focus { outline: none; border-color: var(--primary); }
 
-        .lead-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .lead-title { color: #000; font-size: 1.3rem; margin-bottom: 10px; font-weight: 600; }
-        .lead-desc { color: #555; font-size: 0.95rem; line-height: 1.6; flex-grow: 1; margin-bottom: 20px; }
-        .lead-contact { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
-        .contact-item { display: flex; align-items: center; font-size: 0.85rem; color: #555; margin-bottom: 5px; font-family: var(--font-tech); }
+        .lead-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .lead-title { color: var(--primary); font-size: 1.3rem; margin-bottom: 10px; font-weight: 600; }
+        .lead-desc { color: var(--secondary); font-size: 0.95rem; line-height: 1.6; flex-grow: 1; margin-bottom: 20px; }
+        .lead-contact { background: var(--bg-deep); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .contact-item { display: flex; align-items: center; font-size: 0.85rem; color: var(--secondary); margin-bottom: 5px; font-family: var(--font-tech); }
 
         .action-buttons { display: flex; flex-direction: column; gap: 10px; }
-        
-        /* Botões de Ação Coloridos (Sutis) */
         .btn-wpp { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: rgba(37, 211, 102, 0.1); color: #00a852; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: 600; transition: 0.2s; border: 1px solid rgba(37, 211, 102, 0.3); font-size: 0.9rem; }
         .btn-wpp:hover { background: #00a852; color: #fff; }
-        
         .btn-email { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: rgba(211, 47, 47, 0.1); color: var(--highlight-email); text-decoration: none; padding: 12px; border-radius: 6px; font-weight: 600; transition: 0.2s; border: 1px solid rgba(211, 47, 47, 0.3); font-size: 0.9rem; }
         .btn-email:hover { background: var(--highlight-email); color: #fff; }
+        
+        .btn-delete { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: var(--bg-deep); color: #c62828; border: 1px solid #ffcdd2; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-delete:hover { background: #ffebee; border-color: #ef9a9a; }
+        body.dark-mode .btn-delete { background: rgba(198, 40, 40, 0.1); border-color: rgba(198, 40, 40, 0.3); color: #ef9a9a; }
+        body.dark-mode .btn-delete:hover { background: rgba(198, 40, 40, 0.3); }
 
-        @media (max-width: 900px) {
-            .hero-split { grid-template-columns: 1fr; gap: 20px; }
-            .hero-text { text-align: center; margin-top: 40px; }
-            .hero-text h1 { font-size: 2.5rem; min-height: auto; }
-            .form-card { padding: 25px; }
-            .admin-tools { flex-direction: column; align-items: flex-start; }
-            .filter-group { overflow-x: auto; max-width: 100%; padding-bottom: 5px; }
-            .filter-btn { padding: 10px 18px; font-size: 0.9rem; white-space: nowrap; }
-        }
-
-        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 200; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(5px); }
+        /* Modal e Toast */
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(5px); }
         .modal-wrap.active { opacity: 1; visibility: visible; }
-        .login-box { background: #fff; border: 1px solid #ccc; padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .login-box { background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .modal-wrap.active .login-box { animation: zoomBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        .toast-popup { position: fixed; bottom: 30px; right: 30px; background: #fff; color: #333; padding: 20px 30px; border-radius: 8px; border-left: 5px solid var(--highlight); display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 300; border: 1px solid #eee; }
+        .toast-popup { position: fixed; bottom: 30px; right: 30px; background: var(--bg-panel); color: var(--primary); padding: 20px 30px; border-radius: 8px; border-left: 5px solid var(--highlight); display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 300; border: 1px solid var(--border); }
         .toast-popup.show { transform: translateY(0); animation: borderPulse 2s infinite; }
+        
+        /* ALTERAÇÃO 1: Botões do Modal Customizado */
+        .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn-modal-cancel { background: transparent; border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-modal-confirm { background: var(--highlight-email); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-modal-confirm:hover { background: #b71c1c; }
     </style>
 </head>
 <body>
@@ -209,7 +199,12 @@
     <header>
         <div class="container flex-between">
             <img src="img/logo_oficial_cortado.png" alt="NitroCode" class="logo-img">
-            <button class="btn-lock" onclick="openLogin()">ADMIN ACCESS</button>
+            <div class="header-actions">
+                <button class="btn-lock" onclick="toggleTheme()" aria-label="Alternar Tema Claro e Escuro">
+                    <svg class="sys-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+                <button class="btn-lock" onclick="openLogin()">ADMIN ACCESS</button>
+            </div>
         </div>
     </header>
 
@@ -241,11 +236,16 @@
                 <div class="container">
                     <div class="flex-between">
                         <h2 style="font-weight: 400;">Painel de Controle</h2>
-                        <button onclick="logout()" style="background:none; border:none; color:#666; cursor:pointer;">Sair</button>
+                        <button onclick="logout()" style="background:none; border:none; color:var(--secondary); cursor:pointer;">Sair</button>
                     </div>
                     
                     <div class="admin-tools">
                         <div class="filter-group">
+                            <div class="search-container">
+                                <svg class="sys-icon search-icon-abs" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="text" id="searchInput" class="search-input" placeholder="Buscar lead..." oninput="renderAdmin()" aria-label="Buscar Leads">
+                            </div>
+                            
                             <button class="filter-btn active" onclick="setFilter('all')" id="filter-all">Todos</button>
                             <button class="filter-btn" onclick="setFilter('new')" id="filter-new">Novos</button>
                             <button class="filter-btn" onclick="setFilter('progress')" id="filter-progress">Andamento</button>
@@ -259,22 +259,51 @@
                 </div>
             </div>
 
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total de Leads</div>
+                    <div class="kpi-value" id="kpi-total">0</div>
+                    <div class="kpi-trend">Base Completa</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title" style="color:var(--highlight)">Novas Solicitações</div>
+                    <div class="kpi-value" id="kpi-new">0</div>
+                    <div class="kpi-trend"><svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> Aguardando ação</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title" style="color:var(--status-done)">Finalizados</div>
+                    <div class="kpi-value" id="kpi-done">0</div>
+                    <div class="kpi-trend">Taxa de conversão</div>
+                </div>
+            </div>
+
             <div id="feed" class="feed-container"></div>
         </section>
     </main>
 
     <div id="modalLogin" class="modal-wrap">
         <div class="login-box">
-            <h3 style="margin-bottom:20px; color:#000;">Autenticação</h3>
+            <h3 style="margin-bottom:20px; color:var(--primary);">Autenticação</h3>
             <input type="password" id="passInput" class="input-box" placeholder="Senha" style="text-align:center;">
-            <button class="btn-nitro" onclick="checkPass()">Entrar</button>
-            <button onclick="closeLogin()" style="background:none; border:none; color:#666; margin-top:15px; cursor:pointer;">Cancelar</button>
+            <button class="btn-nitro" id="btnLoginBtn" onclick="checkPass()">Entrar</button>
+            <button onclick="closeLogin()" style="background:none; border:none; color:var(--secondary); margin-top:15px; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modalConfirm" class="modal-wrap">
+        <div class="login-box">
+            <h3 style="color:var(--highlight-email); margin-bottom: 10px;">Excluir Lead?</h3>
+            <p style="color:var(--secondary); margin-bottom: 20px;">Esta ação não pode ser desfeita. Tem certeza que deseja remover este registro permanentemente?</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeConfirm()">Cancelar</button>
+                <button class="btn-modal-confirm" onclick="executeDelete()">Sim, Excluir</button>
+            </div>
         </div>
     </div>
 
     <div id="toast" class="toast-popup">
         <svg class="sys-icon large" style="color:var(--highlight)" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        <div><strong style="display:block; color:#000;">Recebido!</strong><span style="font-size:0.9rem; color:#666;">Sua solicitação foi enviada com sucesso.</span></div>
+        <div><strong style="display:block; color:var(--primary);">Recebido!</strong><span style="font-size:0.9rem; color:var(--secondary);">Sua solicitação foi enviada com sucesso.</span></div>
     </div>
 
     <script>
@@ -295,6 +324,11 @@
         ];
 
         let currentFilter = 'all';
+        let pendingDeleteId = null; // Variável para controlar exclusão
+
+        // ALTERAÇÃO 6: Variáveis Brute Force
+        let loginAttempts = 0;
+        let lockoutTimer = null;
 
         function saveToLocal() {
             localStorage.setItem('nitroCodeLeads', JSON.stringify(posts));
@@ -303,9 +337,22 @@
         const viewClient = document.getElementById('view-client');
         const viewAdmin = document.getElementById('view-admin');
         const modal = document.getElementById('modalLogin');
+        const modalConf = document.getElementById('modalConfirm');
         const feedDiv = document.getElementById('feed');
         const btnSub = document.getElementById('btnSubmit');
         const toast = document.getElementById('toast');
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         const textToType = "Sua ideia,\nNosso Código.";
         const typingElement = document.getElementById('typing-title');
@@ -318,7 +365,26 @@
                 setTimeout(typeWriter, 100);
             }
         }
-        window.onload = typeWriter;
+
+        window.onload = function() {
+            typeWriter();
+            if ("Notification" in window) Notification.requestPermission();
+            
+            if(sessionStorage.getItem('nitroAuth') === 'true') {
+                viewClient.classList.add('hidden');
+                viewAdmin.classList.remove('hidden');
+                renderAdmin();
+            }
+            if(localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
 
         function maskPhone(input) {
             let v = input.value.replace(/\D/g, "");
@@ -334,55 +400,123 @@
         }
         function closeLogin() { modal.classList.remove('active'); }
         
-        function checkPass() {
-            const inputPass = document.getElementById('passInput').value;
-            if(inputPass === 'admin') {
+        async function checkPass() {
+            const btnLogin = document.getElementById('btnLoginBtn');
+            const inputPass = document.getElementById('passInput');
+            
+            // ALTERAÇÃO 6: Lógica Brute Force
+            if (lockoutTimer) return; // Bloqueado
+
+            const inputHash = await sha256(inputPass.value);
+            const adminHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+
+            if(inputHash === adminHash) {
+                sessionStorage.setItem('nitroAuth', 'true');
+                loginAttempts = 0; // Reset
                 closeLogin();
                 viewClient.classList.add('hidden');
                 viewAdmin.classList.remove('hidden');
                 renderAdmin();
             } else {
+                // Erro
+                loginAttempts++;
                 const box = document.querySelector('.login-box');
                 box.style.transform = 'translateX(10px)';
                 setTimeout(() => box.style.transform = 'translateX(-10px)', 100);
                 setTimeout(() => box.style.transform = 'translateX(0)', 200);
+                
+                // Bloqueio após 3 tentativas
+                if (loginAttempts >= 3) {
+                    lockoutTimer = true;
+                    btnLogin.disabled = true;
+                    btnLogin.style.background = '#666';
+                    let timeLeft = 30;
+                    
+                    const interval = setInterval(() => {
+                        btnLogin.innerText = `Aguarde ${timeLeft}s`;
+                        timeLeft--;
+                        if(timeLeft < 0) {
+                            clearInterval(interval);
+                            lockoutTimer = null;
+                            loginAttempts = 0;
+                            btnLogin.disabled = false;
+                            btnLogin.style.background = ''; // Volta ao CSS original
+                            btnLogin.innerText = 'Entrar';
+                        }
+                    }, 1000);
+                }
             }
         }
         
         function logout() {
+            sessionStorage.removeItem('nitroAuth');
             viewAdmin.classList.add('hidden');
             viewClient.classList.remove('hidden');
         }
 
+        // ALTERAÇÃO 4: Validação Visual (Real-time)
         function valForm() {
             const name = document.getElementById('inpName').value.trim();
-            const email = document.getElementById('inpEmail').value.trim();
+            const emailInp = document.getElementById('inpEmail');
+            const phoneInp = document.getElementById('inpPhone');
             const title = document.getElementById('inpTitle').value.trim();
             const desc = document.getElementById('inpDesc').value.trim();
+            
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            let ok = name && email && title && desc && emailRegex.test(email);
+            const isEmailValid = emailRegex.test(emailInp.value.trim());
+            const isPhoneValid = phoneInp.value.length === 0 || phoneInp.value.length >= 14; // Opcional mas se tiver, tem que ter tamanho min
+
+            // Adiciona ou remove classe visual de erro
+            if (emailInp.value.length > 0 && !isEmailValid) {
+                emailInp.classList.add('error');
+            } else {
+                emailInp.classList.remove('error');
+            }
+            
+            if (phoneInp.value.length > 0 && !isPhoneValid) {
+                phoneInp.classList.add('error');
+            } else {
+                phoneInp.classList.remove('error');
+            }
+
+            let ok = name && isEmailValid && isPhoneValid && title && desc;
             btnSub.disabled = !ok;
         }
 
         function submitForm(e) {
             e.preventDefault();
             btnSub.innerHTML = '<span class="spinner"></span> Enviando...';
+            
+            const tempName = document.getElementById('inpName').value;
+            const tempTitle = document.getElementById('inpTitle').value;
+
             setTimeout(() => {
                 const newPost = {
                     id: Date.now(),
-                    user: document.getElementById('inpName').value,
+                    user: tempName,
                     date: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
                     phone: document.getElementById('inpPhone').value,
                     email: document.getElementById('inpEmail').value,
-                    title: document.getElementById('inpTitle').value,
+                    title: tempTitle,
                     desc: document.getElementById('inpDesc').value,
                     status: 'new'
                 };
                 posts.unshift(newPost);
                 saveToLocal();
+                
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 4000);
+                
+                if (Notification.permission === "granted") {
+                    new Notification("Novo Lead Recebido!", {
+                        body: `${tempName} solicitou: ${tempTitle}`,
+                        icon: "img/logo_oficial_cortado.png"
+                    });
+                }
+
                 document.getElementById('clientForm').reset();
+                // Limpa classes de erro se sobrarem
+                document.querySelectorAll('.input-box').forEach(el => el.classList.remove('error'));
                 valForm();
                 btnSub.innerHTML = 'Solicitar Orçamento';
             }, 1500);
@@ -394,6 +528,35 @@
                 post.status = newStatus;
                 saveToLocal();
                 renderAdmin();
+            }
+        }
+
+        // ALTERAÇÃO 1: Lógica do Modal Customizado
+        function deletePost(id) {
+            pendingDeleteId = id;
+            modalConf.classList.add('active');
+        }
+
+        function closeConfirm() {
+            modalConf.classList.remove('active');
+            pendingDeleteId = null;
+        }
+
+        function executeDelete() {
+            if (pendingDeleteId) {
+                posts = posts.filter(p => p.id !== pendingDeleteId);
+                saveToLocal();
+                renderAdmin();
+                closeConfirm();
+
+                const originalContent = toast.innerHTML;
+                toast.innerHTML = '<div><strong style="display:block; color:var(--primary);">Excluído!</strong><span style="font-size:0.9rem; color:var(--secondary);">Lead removido com sucesso.</span></div>';
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => { toast.innerHTML = originalContent; }, 500);
+                }, 3000);
             }
         }
 
@@ -421,18 +584,47 @@
             document.body.removeChild(link);
         }
 
+        function updateKPIs() {
+            const total = posts.length;
+            const newLeads = posts.filter(p => p.status === 'new').length;
+            const finished = posts.filter(p => p.status === 'finished').length;
+
+            document.getElementById('kpi-total').textContent = total;
+            document.getElementById('kpi-new').textContent = newLeads;
+            document.getElementById('kpi-done').textContent = finished;
+        }
+
         function renderAdmin() {
+            updateKPIs();
             feedDiv.innerHTML = '';
+            
             let filteredPosts = posts;
+            
             if(currentFilter !== 'all') {
                 filteredPosts = posts.filter(p => p.status === currentFilter);
             }
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if(searchTerm) {
+                filteredPosts = filteredPosts.filter(p => 
+                    p.user.toLowerCase().includes(searchTerm) || 
+                    p.title.toLowerCase().includes(searchTerm) ||
+                    p.email.toLowerCase().includes(searchTerm)
+                );
+            }
+
             if(filteredPosts.length === 0) {
                 feedDiv.innerHTML = `<div style="grid-column: 1/-1;" class="empty-state"><div class="empty-icon-container">${ICONS.empty}</div><p>Nenhuma solicitação encontrada neste filtro.</p></div>`;
                 return;
             }
 
             filteredPosts.forEach(p => {
+                const safeUser = escapeHtml(p.user);
+                const safeTitle = escapeHtml(p.title);
+                const safeDesc = escapeHtml(p.desc);
+                const safeEmail = escapeHtml(p.email);
+                const safePhone = escapeHtml(p.phone);
+
                 const mailSubject = encodeURIComponent(`NitroCode: Orçamento para ${p.title}`);
                 const mailBody = encodeURIComponent(`Olá ${p.user},\n\nRecebemos sua solicitação sobre "${p.title}" na NitroCode.\n\nGostaríamos de entender melhor sua necessidade para enviar uma proposta técnica.\n\nAtenciosamente,\nEquipe NitroCode.`);
                 const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${p.email}&su=${mailSubject}&body=${mailBody}`;
@@ -440,10 +632,10 @@
                 let whatsappButtonHTML = '';
                 if(p.phone && p.phone.trim() !== '') {
                     const cleanPhone = p.phone.replace(/\D/g,'');
-                    const wppUrl = `https://wa.me/55${cleanPhone}?text=Olá ${p.user}, vi sua solicitação na NitroCode.`;
+                    const wppUrl = `https://wa.me/55${cleanPhone}?text=Olá ${encodeURIComponent(p.user)}, vi sua solicitação na NitroCode.`;
                     whatsappButtonHTML = `<a href="${wppUrl}" target="_blank" class="btn-wpp">${ICONS.whatsapp} Chamar no WhatsApp</a>`;
                 } else {
-                    whatsappButtonHTML = `<div style="text-align:center; color:#888; font-size:0.8rem; padding:5px;">(Sem telefone informado)</div>`;
+                    whatsappButtonHTML = `<div style="text-align:center; color:var(--secondary); font-size:0.8rem; padding:5px;">(Sem telefone informado)</div>`;
                 }
 
                 let cardClass = '', badgeHtml = '';
@@ -469,22 +661,27 @@
                     <div class="lead-card ${cardClass}">
                         ${badgeHtml}
                         <div class="lead-header">
-                            <div><div style="font-weight:700; color:#000;">${p.user}</div><div style="font-size:0.8rem; color:#666; font-family:var(--font-tech)">${p.date}</div></div>
+                            <div><div style="font-weight:700; color:var(--primary);">${safeUser}</div><div style="font-size:0.8rem; color:var(--secondary); font-family:var(--font-tech)">${p.date}</div></div>
                         </div>
-                        <div class="lead-title">${p.title}</div>
-                        <div class="lead-desc">${p.desc}</div>
+                        <div class="lead-title">${safeTitle}</div>
+                        <div class="lead-desc">${safeDesc}</div>
                         
                         <div class="lead-contact">
-                            <div class="contact-item"><span class="contact-icon">${ICONS.mail}</span> ${p.email}</div>
-                            <div class="contact-item"><span class="contact-icon">${ICONS.whatsapp}</span> ${p.phone ? p.phone : 'Não informado'}</div>
+                            <div class="contact-item"><span class="contact-icon">${ICONS.mail}</span> ${safeEmail}</div>
+                            <div class="contact-item"><span class="contact-icon">${ICONS.whatsapp}</span> ${safePhone ? safePhone : 'Não informado'}</div>
                         </div>
 
                         <div class="action-buttons">
                             ${whatsappButtonHTML}
                             <a href="${gmailLink}" target="_blank" class="btn-email">${ICONS.mail} Responder no Gmail</a>
+                            
+                            <button onclick="deletePost(${p.id})" class="btn-delete" aria-label="Excluir este lead permanentemente">
+                                <svg class="sys-icon small" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                Excluir
+                            </button>
                         </div>
                         <div class="status-control">
-                            <label style="font-size:0.7rem; color:#666; text-transform:uppercase; margin-bottom:5px; display:block;">Alterar Status:</label>
+                            <label style="font-size:0.7rem; color:var(--secondary); text-transform:uppercase; margin-bottom:5px; display:block;">Alterar Status:</label>
                             <select class="status-select" onchange="changeStatus(${p.id}, this.value)">
                                 <option value="new" ${p.status === 'new' ? 'selected' : ''}>⚡ Novo Lead</option>
                                 <option value="replied" ${p.status === 'replied' ? 'selected' : ''}>↩️ Já Respondido</option>
