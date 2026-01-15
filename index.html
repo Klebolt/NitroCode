@@ -355,7 +355,7 @@
 
                         <div class="floating-group">
                             <textarea id="inpDesc" class="input-box" rows="3" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)"></textarea>
-                            <label class="floating-label">Detalhes (DETALHE A SUA SOLICITAÇÃO)</label>
+                            <label class="floating-label">Detalhes (Ex: Preciso de um sistema para estoque...)</label>
                         </div>
 
                         <button type="submit" id="btnSubmit" class="btn-nitro" disabled>Receber Proposta Técnica</button>
@@ -767,23 +767,26 @@
                 saveToLocal();
                 clearDraft();
                 
-                if (Notification.permission === "granted") {
-                    new Notification(`Novo Lead: ${formattedCode}`, { body: `${tempName} solicitou: ${tempTitle}`, icon: "img/logo_oficial_cortado.png" });
-                }
-
+                // MUDANÇA: UI atualiza ANTES da tentativa de notificação
+                // para evitar travamento em celular.
                 document.getElementById('clientForm').reset();
                 document.getElementById('clientForm').style.display = 'none';
                 
                 const ctaBox = document.getElementById('ctaBox');
-                
-                // Exibe o protocolo
                 document.getElementById('successCode').innerText = formattedCode;
-
-                // Contatos removidos conforme solicitado!
-
                 ctaBox.classList.add('active');
                 
                 btn.innerHTML = 'Receber Proposta Técnica';
+
+                // Tenta notificação (bloco protegido)
+                try {
+                    if (Notification.permission === "granted") {
+                        new Notification(`Novo Lead: ${formattedCode}`, { body: `${tempName} solicitou: ${tempTitle}`, icon: "img/logo_oficial_cortado.png" });
+                    }
+                } catch(err) {
+                    console.log("Notificação bloqueada pelo browser.");
+                }
+
             }, 1500);
         }
 
