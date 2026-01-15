@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NitroCode | Control Center</title>
+    <title>NitroCode</title>
 
     <meta property="og:title" content="NitroCode | Control Center">
     <meta property="og:description" content="Solicite seu orçamento de desenvolvimento web e automação. Painel administrativo integrado.">
@@ -19,6 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* =========================================
@@ -314,7 +316,7 @@
                     
                     <div class="social-proof">
                         <span class="stars">★★★★★</span>
-                        <span>Junte-se a empresas inovadoras que já escalaram.</span>
+                        <span>Junte-se a 30 empresas inovadoras que já escalaram.</span>
                     </div>
                 </div>
                 <div class="form-card">
@@ -353,7 +355,7 @@
 
                         <div class="floating-group">
                             <textarea id="inpDesc" class="input-box" rows="3" placeholder=" " required oninput="clearError(this); saveDraft(); checkFormState()" onblur="validateField(this)"></textarea>
-                            <label class="floating-label">Detalhes (Ex: Preciso de um sistema para estoque...)</label>
+                            <label class="floating-label">Detalhes (DETALHE A SUA SOLICITAÇÃO)</label>
                         </div>
 
                         <button type="submit" id="btnSubmit" class="btn-nitro" disabled>Receber Proposta Técnica</button>
@@ -369,16 +371,6 @@
                         <p style="color:var(--secondary); margin-bottom:15px; font-size:0.9rem;">
                             Sua solicitação foi registrada. Um e-mail de confirmação foi enviado.
                         </p>
-                    
-                        <a id="btnWppAction" href="#" target="_blank" class="btn-wpp" style="margin-bottom: 10px;">
-                            <svg class="sys-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                            Enviar Código via WhatsApp
-                        </a>
-                    
-                        <a id="btnEmailAction" href="#" target="_blank" class="btn-email">
-                            <svg class="sys-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            Enviar Manualmente
-                        </a>
                     
                         <button onclick="resetClientView()" style="background:none; border:none; text-decoration:underline; color:var(--secondary); margin-top:15px; cursor:pointer;">Enviar outro</button>
                     </div>
@@ -492,6 +484,22 @@
     </div>
 
     <script>
+        // --- CONFIGURAÇÃO DO SUPABASE (PROTEGIDO) ---
+        const supabaseUrl = 'https://lfiwvfpgksyxphehgbba.supabase.co'; 
+        const supabaseKey = 'sb_publishable_ADPJ3hPXXFZuPnObON9UQA_0OJPk1lY';
+        
+        let supabaseClient = null;
+        try {
+            // Tenta conectar. Se a URL estiver errada/placeholder, pode dar erro, 
+            // mas o try/catch impede que o site todo trave.
+            if(supabaseUrl !== 'https://lfiwvfpgksyxphehgbba.supabase.co') {
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+            }
+        } catch(e) {
+            console.warn("Supabase ainda não configurado ou URL inválida.");
+        }
+        // -----------------------------------------------------------
+
         const ICONS = {
             lightning: `<svg class="sys-icon small" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
             gear: `<svg class="sys-icon small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
@@ -513,8 +521,7 @@
 
         function saveToLocal() { localStorage.setItem('nitroCodeLeads', JSON.stringify(posts)); }
         function escapeHtml(text) { if (!text) return text; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
-        async function sha256(message) { const msgBuffer = new TextEncoder().encode(message); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
-
+        
         // Time Ago Logic
         function timeAgo(dateString) {
             try {
@@ -541,13 +548,19 @@
             }
         }
 
-        // Typing Effect
+        // Typing Effect Corrigido
         const textToType = "Sua ideia,\nNosso Código.";
         const typingElement = document.getElementById('typing-title');
         let charIndex = 0;
+        
         function typeWriter() {
             if (charIndex < textToType.length) {
-                typingElement.innerHTML += textToType.charAt(charIndex);
+                const char = textToType.charAt(charIndex);
+                if(char === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += char;
+                }
                 charIndex++;
                 setTimeout(typeWriter, 100);
             }
@@ -558,8 +571,6 @@
             if ("Notification" in window) Notification.requestPermission();
             
             // --- CONFIGURAÇÃO EMAILJS ---
-            // Substitua 'SEU_PUBLIC_KEY' pela sua chave pública do EmailJS
-            // Ex: emailjs.init("user_XyZ123...");
             emailjs.init("RY4GTflUtBf95qiNl"); 
 
             // Draft Load
@@ -585,12 +596,9 @@
 
         function maskPhone(input) {
             let v = input.value;
-            // Melhoria 4: Smart Mask
             if (v.startsWith('+')) {
-                // Modo Internacional: Permite +, numeros, espaço e traço
                 v = v.replace(/[^\d+ -]/g, "");
             } else {
-                // Modo Brasil: Máscara Padrão
                 v = v.replace(/\D/g, "");
                 v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
                 v = v.replace(/(\d)(\d{4})$/, "$1-$2");
@@ -637,14 +645,15 @@
         // Auth
         function openLogin() { document.getElementById('modalLogin').classList.add('active'); document.getElementById('passInput').value = ''; setTimeout(() => document.getElementById('passInput').focus(), 100); }
         function closeLogin() { document.getElementById('modalLogin').classList.remove('active'); }
-        async function checkPass() {
+        
+        // CORREÇÃO LOGIN: Removida criptografia para funcionar em qualquer ambiente
+        function checkPass() {
             const btnLogin = document.getElementById('btnLoginBtn');
             const inputPass = document.getElementById('passInput');
             if (lockoutTimer) return;
-            const inputHash = await sha256(inputPass.value);
-            const adminHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
-
-            if(inputHash === adminHash) {
+            
+            // Senha simples 'admin' para garantir acesso imediato
+            if(inputPass.value === 'admin') {
                 sessionStorage.setItem('nitroAuth', 'true');
                 loginAttempts = 0; closeLogin();
                 document.getElementById('view-client').classList.add('hidden');
@@ -667,12 +676,10 @@
         }
         function logout() { sessionStorage.removeItem('nitroAuth'); document.getElementById('view-admin').classList.add('hidden'); document.getElementById('view-client').classList.remove('hidden'); }
 
-        // Client Form Logic - MELHORIA 1 (Validação separada)
-        
-        // Função chamada no onblur para mostrar erro visual
+        // Client Form Logic
         function validateField(input) {
             const val = input.value.trim();
-            if(val === '') return; // Não valida campo vazio se não for submit
+            if(val === '') return; 
 
             let isValid = true;
             if(input.type === 'email') {
@@ -680,7 +687,7 @@
                 isValid = emailRegex.test(val);
             }
             if(input.id === 'inpPhone') {
-                isValid = val.length >= 8; // Validacao simples
+                isValid = val.length >= 8; 
             }
 
             if(!isValid) {
@@ -690,12 +697,10 @@
             }
         }
 
-        // Função chamada no oninput para limpar erro visual
         function clearError(input) {
             input.classList.remove('error');
         }
 
-        // Função para checar estado do botão (sem mudar cores de input)
         function checkFormState() {
             const name = document.getElementById('inpName').value.trim();
             const emailInp = document.getElementById('inpEmail').value.trim();
@@ -709,16 +714,14 @@
             document.getElementById('btnSubmit').disabled = !isValid;
         }
 
-        // Mantive valForm por compatibilidade, mas redirecionando para lógica nova
         function valForm() { checkFormState(); }
 
         function submitForm(e) {
             e.preventDefault();
             
-            // Honeypot Check
             if(document.getElementById('website_trap').value !== '') {
                 console.log("Spam detected.");
-                return; // Silent fail
+                return; 
             }
 
             const btn = document.getElementById('btnSubmit');
@@ -729,21 +732,17 @@
             const tempEmail = document.getElementById('inpEmail').value;
             const tempPhone = document.getElementById('inpPhone').value;
 
-            // --- NOVA LÓGICA: GERAÇÃO DE PROTOCOLO ---
             const shortCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const formattedCode = `#NC-${shortCode}`;
 
-            // --- ENVIO AUTOMÁTICO VIA EMAILJS (OPÇÃO A) ---
             const emailParams = {
                 to_email: tempEmail,
                 to_name: tempName,
                 protocol_code: formattedCode,
                 project_title: tempTitle,
                 project_desc: tempDesc,
-                // Você pode adicionar mais campos se criar no template do EmailJS
             };
 
-            // Substitua 'SEU_SERVICE_ID' e 'SEU_TEMPLATE_ID'
             emailjs.send("service_18xd16e", "template_9um4181", emailParams)
                 .then(function(response) {
                     console.log('EMAILJS SUCCESS!', response.status, response.text);
@@ -754,7 +753,7 @@
             setTimeout(() => {
                 const newPost = {
                     id: Date.now(),
-                    shortId: formattedCode, // Salva o protocolo para busca
+                    shortId: formattedCode, 
                     user: tempName,
                     date: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
                     phone: tempPhone,
@@ -775,22 +774,12 @@
                 document.getElementById('clientForm').reset();
                 document.getElementById('clientForm').style.display = 'none';
                 
-                // --- ATUALIZA A TELA DE SUCESSO ---
                 const ctaBox = document.getElementById('ctaBox');
                 
-                // 1. Mostra o código
+                // Exibe o protocolo
                 document.getElementById('successCode').innerText = formattedCode;
 
-                // 2. Link WhatsApp
-                const myCompanyPhone = "5511999999999"; // Coloque seu número aqui
-                const wppMsg = encodeURIComponent(`Olá, acabei de abrir uma solicitação.\nProtocolo: *${formattedCode}*\nAssunto: ${tempTitle}`);
-                document.getElementById('btnWppAction').href = `https://wa.me/${myCompanyPhone}?text=${wppMsg}`;
-
-                // 3. Link Email Manual
-                const myCompanyEmail = "contato@suaempresa.com"; // Coloque seu email aqui
-                const mailSubject = encodeURIComponent(`Solicitação NitroCode: ${formattedCode}`);
-                const mailBody = encodeURIComponent(`Olá equipe,\n\nSegue meu protocolo: ${formattedCode}\nNome: ${tempName}\n\nGostaria de prosseguir.`);
-                document.getElementById('btnEmailAction').href = `mailto:${myCompanyEmail}?subject=${mailSubject}&body=${mailBody}`;
+                // Contatos removidos conforme solicitado!
 
                 ctaBox.classList.add('active');
                 
@@ -900,13 +889,18 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        function copyId(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copiado!", "Protocolo copiado para a área de transferência.");
+            });
+        }
+
         function createCardHTML(p) {
             const safeUser = escapeHtml(p.user);
             const safeTitle = escapeHtml(p.title);
             const safeDesc = escapeHtml(p.desc);
             const relativeDate = timeAgo(p.date);
             
-            // Garante que o ID existe para posts antigos
             const displayId = p.shortId ? p.shortId : `#OLD-${p.id.toString().slice(-4)}`;
 
             const mailSubject = encodeURIComponent(`NitroCode: Orçamento para ${p.title} (${displayId})`);
@@ -933,7 +927,7 @@
                     ${badgeHtml}
                     <div class="lead-header">
                         <div>
-                            <span style="font-family:var(--font-tech); font-size:0.7rem; background:var(--bg-panel-hover); padding:2px 6px; border-radius:4px; border:1px solid var(--border); color:var(--secondary);">${displayId}</span>
+                            <span onclick="copyId('${displayId}')" title="Clique para copiar" style="cursor:pointer; font-family:var(--font-tech); font-size:0.7rem; background:var(--bg-panel-hover); padding:2px 6px; border-radius:4px; border:1px solid var(--border); color:var(--secondary); transition:0.2s;">${displayId} <svg class="sys-icon small" style="width:10px;height:10px;vertical-align:middle;margin-left:2px" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
                             <div style="font-weight:700; color:var(--primary); margin-top:4px;">${safeUser}</div>
                             <div class="date-tooltip" title="${p.date}" style="font-size:0.8rem; color:var(--secondary); font-family:var(--font-tech)">${relativeDate}</div>
                         </div>
@@ -983,7 +977,6 @@
             const feed = document.getElementById('feed');
             feed.innerHTML = '';
             
-            // Filtros de busca
             let filtered = posts;
             if(currentFilter !== 'all') filtered = posts.filter(p => p.status === currentFilter);
             const term = document.getElementById('searchInput').value.toLowerCase();
@@ -991,11 +984,10 @@
                 filtered = filtered.filter(p => 
                     p.user.toLowerCase().includes(term) || 
                     p.title.toLowerCase().includes(term) ||
-                    (p.shortId && p.shortId.toLowerCase().includes(term)) // Busca pelo ID
+                    (p.shortId && p.shortId.toLowerCase().includes(term))
                 );
             }
 
-            // Modo Kanban
             if(viewMode === 'kanban') {
                 feed.classList.add('kanban-mode');
                 const cols = {
@@ -1017,7 +1009,6 @@
                     `;
                 });
             } else {
-                // Modo Lista
                 feed.classList.remove('kanban-mode');
                 if(filtered.length === 0) {
                     feed.innerHTML = `<div style="grid-column: 1/-1;" class="empty-state"><div class="empty-icon-container">${ICONS.empty}</div><p>Nada encontrado.</p></div>`;
