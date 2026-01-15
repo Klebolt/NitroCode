@@ -488,16 +488,8 @@
         const supabaseUrl = 'https://lfiwvfpgksyxphehgbba.supabase.co'; 
         const supabaseKey = 'sb_publishable_ADPJ3hPXXFZuPnObON9UQA_0OJPk1lY';
         
-        let supabaseClient = null;
-        try {
-            // Tenta conectar. Se a URL estiver errada/placeholder, pode dar erro, 
-            // mas o try/catch impede que o site todo trave.
-            if(supabaseUrl !== 'https://lfiwvfpgksyxphehgbba.supabase.co') {
-                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-            }
-        } catch(e) {
-            console.warn("Supabase ainda não configurado ou URL inválida.");
-        }
+        // Uso nome diferente para não quebrar o site
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         // -----------------------------------------------------------
 
         const ICONS = {
@@ -510,8 +502,8 @@
             empty: `<svg class="sys-icon" style="width:64px;height:64px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`
         };
 
-        let savedData = localStorage.getItem('nitroCodeLeads');
-        let posts = savedData ? JSON.parse(savedData) : [];
+        // ALTERAÇÃO 1: Iniciamos vazio para forçar a busca no banco
+        let posts = [];
         
         let currentFilter = 'all';
         let viewMode = 'list'; // list ou kanban
@@ -519,13 +511,15 @@
         let loginAttempts = 0;
         let lockoutTimer = null;
 
-        function saveToLocal() { localStorage.setItem('nitroCodeLeads', JSON.stringify(posts)); }
+        function saveToLocal() { 
+            // Mantido apenas como fallback visual ou debug
+            localStorage.setItem('nitroCodeLeads', JSON.stringify(posts)); 
+        }
         function escapeHtml(text) { if (!text) return text; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
         
         // Time Ago Logic
         function timeAgo(dateString) {
             try {
-                // Formato esperado: "DD/MM/YYYY às HH:MM"
                 const [datePart, timePart] = dateString.split(' às ');
                 const [day, month, year] = datePart.split('/');
                 const [hour, min] = timePart.split(':');
@@ -575,14 +569,32 @@
 
             // Draft Load
             loadDraft();
+            
+            // ALTERAÇÃO 2: Busca dados reais do Supabase ao carregar
+            fetchLeads();
 
             if(sessionStorage.getItem('nitroAuth') === 'true') {
                 document.getElementById('view-client').classList.add('hidden');
                 document.getElementById('view-admin').classList.remove('hidden');
-                renderAdmin();
+                // renderAdmin será chamado dentro de fetchLeads
             }
             if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
         };
+
+        // NOVA FUNÇÃO: Busca dados do Supabase
+        async function fetchLeads() {
+            const { data, error } = await supabaseClient
+                .from('leads')
+                .select('*')
+                .order('id', { ascending: false });
+            
+            if (!error && data) {
+                posts = data;
+                renderAdmin();
+            } else {
+                console.error("Erro ao buscar leads:", error);
+            }
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
@@ -646,13 +658,11 @@
         function openLogin() { document.getElementById('modalLogin').classList.add('active'); document.getElementById('passInput').value = ''; setTimeout(() => document.getElementById('passInput').focus(), 100); }
         function closeLogin() { document.getElementById('modalLogin').classList.remove('active'); }
         
-        // CORREÇÃO LOGIN: Removida criptografia para funcionar em qualquer ambiente
         function checkPass() {
             const btnLogin = document.getElementById('btnLoginBtn');
             const inputPass = document.getElementById('passInput');
             if (lockoutTimer) return;
             
-            // Senha simples 'admin' para garantir acesso imediato
             if(inputPass.value === 'admin') {
                 sessionStorage.setItem('nitroAuth', 'true');
                 loginAttempts = 0; closeLogin();
@@ -716,7 +726,7 @@
 
         function valForm() { checkFormState(); }
 
-        function submitForm(e) {
+        async function submitForm(e) {
             e.preventDefault();
             
             if(document.getElementById('website_trap').value !== '') {
@@ -735,6 +745,7 @@
             const shortCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const formattedCode = `#NC-${shortCode}`;
 
+            // 1. ENVIA EMAIL
             const emailParams = {
                 to_email: tempEmail,
                 to_name: tempName,
@@ -750,25 +761,34 @@
                     console.log('EMAILJS FAILED...', error);
                 });
 
+            // 2. GRAVA NO SUPABASE
+            const newLead = {
+                shortId: formattedCode, 
+                user: tempName,
+                date: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+                phone: tempPhone,
+                email: tempEmail,
+                title: tempTitle,
+                desc: tempDesc,
+                status: 'new',
+                logs: JSON.stringify([{date: new Date().toLocaleString(), msg: `Lead criado. Protocolo: ${formattedCode}`}])
+            };
+
+            const { error } = await supabaseClient.from('leads').insert([newLead]);
+
+            if (error) {
+                console.error("Erro ao salvar no banco:", error);
+                alert("Erro ao salvar solicitação. Tente novamente.");
+                btn.innerHTML = 'Receber Proposta Técnica';
+                return;
+            }
+
+            // Atualiza lista local
+            fetchLeads();
+            clearDraft();
+            
+            // 3. UI FEEDBACK (com delay visual para parecer processamento)
             setTimeout(() => {
-                const newPost = {
-                    id: Date.now(),
-                    shortId: formattedCode, 
-                    user: tempName,
-                    date: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
-                    phone: tempPhone,
-                    email: tempEmail,
-                    title: tempTitle,
-                    desc: tempDesc,
-                    status: 'new',
-                    logs: [{date: new Date().toLocaleString(), msg: `Lead criado. Protocolo: ${formattedCode}`}]
-                };
-                posts.unshift(newPost);
-                saveToLocal();
-                clearDraft();
-                
-                // MUDANÇA: UI atualiza ANTES da tentativa de notificação
-                // para evitar travamento em celular.
                 document.getElementById('clientForm').reset();
                 document.getElementById('clientForm').style.display = 'none';
                 
@@ -778,7 +798,6 @@
                 
                 btn.innerHTML = 'Receber Proposta Técnica';
 
-                // Tenta notificação (bloco protegido)
                 try {
                     if (Notification.permission === "granted") {
                         new Notification(`Novo Lead: ${formattedCode}`, { body: `${tempName} solicitou: ${tempTitle}`, icon: "img/logo_oficial_cortado.png" });
@@ -787,7 +806,7 @@
                     console.log("Notificação bloqueada pelo browser.");
                 }
 
-            }, 1500);
+            }, 1000);
         }
 
         function resetClientView() {
@@ -796,24 +815,38 @@
         }
 
         // Admin Logic
-        function changeStatus(id, newStatus) {
-            const post = posts.find(p => p.id === id);
-            if(post) {
-                post.status = newStatus;
-                if(!post.logs) post.logs = [];
-                post.logs.push({date: new Date().toLocaleString(), msg: `Status alterado para ${newStatus}`});
-                saveToLocal();
-                renderAdmin();
+        async function changeStatus(id, newStatus) {
+            // Atualiza no banco
+            const { error } = await supabaseClient
+                .from('leads')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if(!error) {
+                // Se deu certo, atualiza a tela
+                fetchLeads();
+            } else {
+                alert("Erro ao atualizar status.");
             }
         }
 
         function deletePost(id) { pendingDeleteId = id; document.getElementById('modalConfirm').classList.add('active'); }
         function closeConfirm() { document.getElementById('modalConfirm').classList.remove('active'); pendingDeleteId = null; }
-        function executeDelete() {
+        
+        async function executeDelete() {
             if (pendingDeleteId) {
-                posts = posts.filter(p => p.id !== pendingDeleteId);
-                saveToLocal(); renderAdmin(); closeConfirm();
-                showToast("Excluído!", "Lead removido com sucesso.");
+                const { error } = await supabaseClient
+                    .from('leads')
+                    .delete()
+                    .eq('id', pendingDeleteId);
+
+                if(!error) {
+                    fetchLeads(); 
+                    closeConfirm();
+                    showToast("Excluído!", "Lead removido com sucesso.");
+                } else {
+                    alert("Erro ao excluir.");
+                }
             }
         }
 
@@ -831,21 +864,29 @@
             }
         }
         function closeEdit() { document.getElementById('modalEdit').classList.remove('active'); }
-        function saveEdit() {
+        
+        async function saveEdit() {
             const id = parseInt(document.getElementById('editId').value);
-            const post = posts.find(p => p.id === id);
-            if(post) {
-                post.user = document.getElementById('editName').value;
-                post.email = document.getElementById('editEmail').value;
-                post.phone = document.getElementById('editPhone').value;
-                post.title = document.getElementById('editTitle').value;
-                post.desc = document.getElementById('editDesc').value;
-                if(!post.logs) post.logs = [];
-                post.logs.push({date: new Date().toLocaleString(), msg: `Dados editados`});
-                saveToLocal();
+            
+            const updates = {
+                user: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+                title: document.getElementById('editTitle').value,
+                desc: document.getElementById('editDesc').value
+            };
+
+            const { error } = await supabaseClient
+                .from('leads')
+                .update(updates)
+                .eq('id', id);
+
+            if(!error) {
+                fetchLeads();
                 closeEdit();
-                renderAdmin();
                 showToast("Sucesso!", "Dados atualizados.");
+            } else {
+                alert("Erro ao salvar edição.");
             }
         }
 
